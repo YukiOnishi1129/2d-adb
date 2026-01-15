@@ -47,7 +47,7 @@ jobs:
 
       - name: Build
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL_2D_ADB }}
         run: pnpm build
 
       - name: Fix file permissions
