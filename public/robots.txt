@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /privacy
+
+Sitemap: https://2d-adb.com/sitemap.xml

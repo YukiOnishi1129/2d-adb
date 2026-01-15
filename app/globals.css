@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+:root {
+  /* ライトモード基調 - Apple/Notion/Stripe風の清潔感 */
+  --background: #fafafa;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --popover: #ffffff;
+  --popover-foreground: #18181b;
+  --primary: #1e3a5f;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #6366f1;
+  --accent-foreground: #fafafa;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #6366f1;
+  --radius: 0.5rem;
+
+  /* カスタムカラー */
+  --sale: #ea580c;
+  --sale-foreground: #ffffff;
+  --warning: #f59e0b;
+  --badge-cv: #dbeafe;
+  --badge-cv-foreground: #1e40af;
+  --badge-tag: #f3e8ff;
+  --badge-tag-foreground: #7c3aed;
+}
+
+/* ダークモード - 深夜の購買意欲を刺激するダークネイビー */
+.dark {
+  --background: #0b0e14;
+  --foreground: #e4e4e7;
+  --card: #12161f;
+  --card-foreground: #e4e4e7;
+  --popover: #12161f;
+  --popover-foreground: #e4e4e7;
+  --primary: #60a5fa;
+  --primary-foreground: #0b0e14;
+  --secondary: #1a1f2a;
+  --secondary-foreground: #e4e4e7;
+  --muted: #1a1f2a;
+  --muted-foreground: #9ca3af;
+  --accent: #818cf8;
+  --accent-foreground: #e4e4e7;
+  --destructive: #f87171;
+  --destructive-foreground: #e4e4e7;
+  --border: #2a3140;
+  --input: #2a3140;
+  --ring: #818cf8;
+
+  /* カスタムカラー（ダーク用） */
+  --sale: #fb923c;
+  --sale-foreground: #ffffff;
+  --warning: #fbbf24;
+  --badge-cv: #1e3a5f;
+  --badge-cv-foreground: #93c5fd;
+  --badge-tag: #3b1d5f;
+  --badge-tag-foreground: #c4b5fd;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sale: var(--sale);
+  --color-sale-foreground: var(--sale-foreground);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* スクロールバーのカスタマイズ（ライト版） */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* 横スクロールセクション用: スクロールバー非表示 */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
