@@ -84,28 +84,28 @@ export function HeroSaleBanner({ saleWorks }: HeroSaleBannerProps) {
           </div>
         </div>
 
-        {/* 中央: カウントダウン（マウント後のみ表示） */}
+        {/* 中央: カウントダウン（マウント後のみ表示、モバイル対応） */}
         {isMounted && timeLeft && !timeLeft.expired && (
-          <div className="hidden items-center gap-2 md:flex">
-            <Clock className="h-4 w-4 text-yellow-300" />
-            <div className="flex items-center gap-0.5 font-mono text-sm font-bold tabular-nums">
+          <div className="flex items-center gap-1 md:gap-2">
+            <Clock className="h-3 w-3 md:h-4 md:w-4 text-yellow-300" />
+            <div className="flex items-center gap-0.5 font-mono text-xs md:text-sm font-bold tabular-nums">
               {timeLeft.days > 0 && (
                 <>
-                  <span className="rounded bg-white/20 px-1.5 py-0.5">
+                  <span className="rounded bg-white/20 px-1 md:px-1.5 py-0.5">
                     {timeLeft.days}
                   </span>
-                  <span className="text-xs mx-0.5">日</span>
+                  <span className="text-[10px] md:text-xs mx-0.5">日</span>
                 </>
               )}
-              <span className="rounded bg-white/20 px-1.5 py-0.5">
+              <span className="rounded bg-white/20 px-1 md:px-1.5 py-0.5">
                 {String(timeLeft.hours).padStart(2, "0")}
               </span>
               <span>:</span>
-              <span className="rounded bg-white/20 px-1.5 py-0.5">
+              <span className="rounded bg-white/20 px-1 md:px-1.5 py-0.5">
                 {String(timeLeft.minutes).padStart(2, "0")}
               </span>
-              <span>:</span>
-              <span className="rounded bg-white/20 px-1.5 py-0.5">
+              <span className="hidden sm:inline">:</span>
+              <span className="hidden sm:inline rounded bg-white/20 px-1 md:px-1.5 py-0.5">
                 {String(timeLeft.seconds).padStart(2, "0")}
               </span>
             </div>
@@ -116,10 +116,11 @@ export function HeroSaleBanner({ saleWorks }: HeroSaleBannerProps) {
         <Button
           asChild
           size="sm"
-          className="shrink-0 bg-white text-rose-600 hover:bg-white/90 font-bold"
+          className="shrink-0 bg-white text-rose-600 hover:bg-white/90 font-bold px-2 sm:px-3"
         >
           <Link href="/sale">
-            セールを見る
+            <span className="hidden sm:inline">セールを見る</span>
+            <span className="sm:hidden">見る</span>
             <ChevronRight className="ml-0.5 h-4 w-4" />
           </Link>
         </Button>

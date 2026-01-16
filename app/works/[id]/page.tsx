@@ -87,12 +87,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : "";
   const title = `${salePrefix}${work.title} | 2D-ADB`;
 
-  // description: 刺さりポイント優先、なければおすすめ理由や要約
-  const description =
+  // description: 評価情報 + 刺さりポイント優先、なければおすすめ理由や要約
+  const ratingText = work.ratingDlsite ? `評価${work.ratingDlsite.toFixed(1)}` : "";
+  const baseDescription =
     work.aiAppealPoints ||
     work.aiRecommendReason ||
     work.aiSummary ||
-    `${work.title}の詳細ページ`;
+    "";
+  const description = baseDescription
+    ? `${ratingText ? `${ratingText}の` : ""}${baseDescription}`
+    : `${work.title}の価格比較・セール情報・レビューをチェック`;
 
   // OG画像: サムネイル優先
   const ogImage = work.thumbnailUrl || work.sampleImages[0] || null;

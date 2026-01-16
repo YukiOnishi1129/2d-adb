@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "2D-ADB | 二次元コンテンツデータベース",
+  title: "2D-ADB | ASMR・同人音声の厳選おすすめ作品",
   description:
-    "ASMR・同人音声・同人ゲームの作品検索。声優、サークル、シチュエーションで簡単に探せる。",
+    "迷ったらここから選べばハズレなし。ASMR・同人音声・同人ゲームの厳選作品を紹介。評価・ランキング・セール情報もまとめてチェック。",
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
