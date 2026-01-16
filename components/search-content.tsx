@@ -13,7 +13,6 @@ import type {
   PlatformFilter,
   PriceFilter,
 } from "@/lib/search";
-import Link from "next/link";
 
 interface SearchContentProps {
   bannerData?: {

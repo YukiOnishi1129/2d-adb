@@ -86,7 +86,7 @@ export function CVListContent({ actors }: CVListContentProps) {
             <h2 className="text-lg font-bold text-foreground">人気声優TOP10</h2>
           </div>
           <div className="grid gap-3">
-            {filteredPopular.map((actor, index) => {
+            {filteredPopular.map((actor) => {
               const rank = popularActors.indexOf(actor) + 1;
               return (
                 <Link
