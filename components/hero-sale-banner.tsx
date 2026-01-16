@@ -45,18 +45,18 @@ export function HeroSaleBanner({ saleWorks }: HeroSaleBannerProps) {
       .sort()[0];
   }, [saleWorks]);
 
-  // 初期値を計算（SSR対応）
-  const initialTimeLeft = useMemo(() => {
-    if (!saleEndDate) return null;
-    return calculateTimeLeft(saleEndDate);
-  }, [saleEndDate]);
-
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(initialTimeLeft);
+  // Hydrationエラー回避のため初期値はnull、クライアントでのみ表示
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     if (!saleEndDate) return;
 
-    // マウント後に更新を開始
+    // 即座に更新
+    setTimeLeft(calculateTimeLeft(saleEndDate));
+
+    // その後1秒ごとに更新
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft(saleEndDate));
     }, 1000);
@@ -84,8 +84,8 @@ export function HeroSaleBanner({ saleWorks }: HeroSaleBannerProps) {
           </div>
         </div>
 
-        {/* 中央: カウントダウン */}
-        {timeLeft && !timeLeft.expired && (
+        {/* 中央: カウントダウン（マウント後のみ表示） */}
+        {isMounted && timeLeft && !timeLeft.expired && (
           <div className="hidden items-center gap-2 md:flex">
             <Clock className="h-4 w-4 text-yellow-300" />
             <div className="flex items-center gap-0.5 font-mono text-sm font-bold tabular-nums">

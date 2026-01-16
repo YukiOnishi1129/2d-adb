@@ -4,14 +4,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  getLatestDailyRecommendation,
+  getFeatureBySlug,
+  getAllFeatureSlugs,
+  getAllFeatures,
   getWorksByIds,
   getLatestSaleFeature,
   getWorkById,
-  getAllFeatures,
+  getLatestDailyRecommendation,
 } from "@/lib/db";
 import { dbWorkToWork } from "@/lib/types";
 import type { Work } from "@/lib/types";
+import type { Metadata } from "next";
 import {
   Star,
   Clock,
@@ -19,15 +22,57 @@ import {
   Gamepad2,
   Play,
   ExternalLink,
-  Trophy,
   ThumbsUp,
   Users,
   Sparkles,
   ChevronRight,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { FeaturedBanners } from "@/components/featured-banners";
 
 export const dynamic = "force-static";
+
+// 静的パラメータを生成
+export async function generateStaticParams() {
+  const slugs = await getAllFeatureSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
+
+// メタデータを動的生成
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const feature = await getFeatureBySlug(slug);
+  if (!feature) {
+    return { title: "特集ページ | 2D-ADB" };
+  }
+
+  const title = `${feature.name}特集 | 2D-ADB`;
+  const description = feature.description || `${feature.name}作品の厳選リスト`;
+  const ogImage = feature.thumbnail_url || undefined;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      ...(ogImage && { images: [{ url: ogImage }] }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(ogImage && { images: [ogImage] }),
+    },
+  };
+}
 
 // 価格フォーマット
 function formatPrice(price: number): string {
@@ -45,7 +90,7 @@ function getSampleUrl(work: Work): string | null {
   return null;
 }
 
-// おすすめカード（大きめ）
+// おすすめカード
 function RecommendationCard({
   work,
   reason,
@@ -238,7 +283,7 @@ function CategorySection({
         <Icon className={`h-5 w-5 ${isASMR ? "text-purple-500" : "text-green-500"}`} />
         <h2 className="text-lg font-bold text-foreground">{title}</h2>
         <Badge variant="secondary" className="text-xs">
-          TOP {works.length}
+          {works.length}作品
         </Badge>
       </div>
       <div className="grid gap-4">
@@ -260,43 +305,58 @@ function CategorySection({
   );
 }
 
-export default async function RecommendationsPage() {
-  // おすすめデータを取得
-  const recommendation = await getLatestDailyRecommendation();
+export default async function FeaturePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const feature = await getFeatureBySlug(slug);
 
-  if (!recommendation) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="mx-auto max-w-5xl px-4 py-8">
-          <p className="text-muted-foreground">おすすめデータがありません</p>
-        </main>
-        <Footer />
-      </div>
-    );
+  if (!feature) {
+    notFound();
   }
 
-  // 作品データを取得
-  const asmrWorkIds = (recommendation.asmr_works || []).map(w => w.work_id);
-  const gameWorkIds = (recommendation.game_works || []).map(w => w.work_id);
+  // 作品データを取得（各5件まで）
+  const asmrWorkIds = (feature.asmr_works || []).slice(0, 5).map(w => w.work_id);
+  const gameWorkIds = (feature.game_works || []).slice(0, 5).map(w => w.work_id);
 
-  const [asmrDbWorks, gameDbWorks, saleFeature, allFeatures] = await Promise.all([
+  const [asmrDbWorks, gameDbWorks, saleFeature, recommendation, allFeatures] = await Promise.all([
     getWorksByIds(asmrWorkIds),
     getWorksByIds(gameWorkIds),
     getLatestSaleFeature(),
+    getLatestDailyRecommendation(),
     getAllFeatures(),
   ]);
 
-  // セール特集のメイン作品を取得
-  const saleFeatureMainWork = saleFeature?.main_work_id
-    ? await getWorkById(saleFeature.main_work_id)
-    : null;
+  // セール特集のメイン作品と編集部おすすめの1位作品を取得
+  const recommendationFirstWorkId = recommendation?.asmr_works?.[0]?.work_id || recommendation?.game_works?.[0]?.work_id;
+  const [saleFeatureMainWork, recommendationFirstWork] = await Promise.all([
+    saleFeature?.main_work_id ? getWorkById(saleFeature.main_work_id) : null,
+    recommendationFirstWorkId ? getWorkById(recommendationFirstWorkId) : null,
+  ]);
 
   const asmrWorks = asmrDbWorks.map(dbWorkToWork);
   const gameWorks = gameDbWorks.map(dbWorkToWork);
+
+  // セール特集用データ
   const saleThumbnail = saleFeatureMainWork?.thumbnail_url || null;
   const saleTargetDate = saleFeature?.target_date;
+  const mainWorkSaleEndDate = saleFeatureMainWork?.sale_end_date_dlsite || saleFeatureMainWork?.sale_end_date_fanza;
   const saleMaxDiscountRate = saleFeature?.max_discount_rate;
+
+  // 編集部おすすめ用データ
+  const recommendationThumbnail = recommendationFirstWork?.thumbnail_url || null;
+  const recommendationDate = recommendation?.target_date;
+
+  // 他の特集ページ（自分自身を除外）
+  const otherFeatures = allFeatures.filter(f => f.slug !== slug);
+
+  // 更新日をフォーマット
+  const formatUpdatedAt = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -306,103 +366,75 @@ export default async function RecommendationsPage() {
         {/* ページヘッダー */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <Trophy className="h-6 w-6 text-amber-500" />
+            <Sparkles className="h-6 w-6 text-amber-500" />
             <h1 className="text-xl font-bold text-foreground">
-              {recommendation.headline || "今日のおすすめ"}
+              {feature.headline || `${feature.name}特集`}
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            当サイトの編集部が厳選した作品をご紹介
+            {feature.description || `${feature.name}作品を厳選してお届け`}
           </p>
           <div className="mt-2 text-xs text-muted-foreground">
-            {recommendation.target_date} 更新
+            {formatUpdatedAt(feature.updated_at)} 更新
           </div>
         </div>
 
         {/* ASMR部門 */}
         <CategorySection
-          title="ASMR部門TOP5"
+          title={`${feature.name} ASMR`}
           icon={Headphones}
           works={asmrWorks}
-          recommendations={recommendation.asmr_works || []}
+          recommendations={feature.asmr_works || []}
           isASMR={true}
         />
 
         {/* ゲーム部門 */}
         <CategorySection
-          title="ゲーム部門TOP5"
+          title={`${feature.name} ゲーム`}
           icon={Gamepad2}
           works={gameWorks}
-          recommendations={recommendation.game_works || []}
+          recommendations={feature.game_works || []}
           isASMR={false}
         />
 
-        {/* 他のコンテンツへの誘導 */}
-        <section className="mt-10 space-y-4">
-          {/* セール特集バナー */}
-          <Link href="/sale/tokushu">
-            <Card className="overflow-hidden border border-sale/30 hover:border-sale/50 transition-all">
-              <div className="flex items-center gap-4 p-4">
-                {saleThumbnail && (
-                  <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden">
-                    <img
-                      src={saleThumbnail}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
+        {/* このジャンルの作品をもっと見る */}
+        <div className="mt-8 mb-10">
+          <Link href={`/search?q=${encodeURIComponent(feature.name)}`}>
+            <Card className="overflow-hidden border-2 border-primary hover:border-primary/80 transition-all bg-gradient-to-r from-primary/10 to-primary/5">
+              <div className="flex items-center justify-between p-5">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground">
+                    <Search className="h-6 w-6" />
                   </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Sparkles className="h-4 w-4 text-sale" />
-                    <span className="text-sm font-bold text-sale">
-                      {saleTargetDate ? `${new Date(saleTargetDate).getMonth() + 1}/${new Date(saleTargetDate).getDate()}のセール特集` : "セール特集"}
-                    </span>
+                  <div>
+                    <p className="text-base font-bold text-foreground">
+                      「{feature.name}」の作品をもっと見る
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      検索ページで絞り込み・並び替え
+                    </p>
                   </div>
-                  <p className="text-xs font-bold text-muted-foreground">
-                    {saleMaxDiscountRate ? `最大${saleMaxDiscountRate}%OFF！` : "厳選おすすめ作品"}
-                  </p>
                 </div>
-                <ChevronRight className="h-5 w-5 text-sale shrink-0" />
+                <div className="flex items-center gap-1 text-primary font-bold">
+                  <span className="text-sm hidden sm:inline">検索</span>
+                  <ChevronRight className="h-6 w-6" />
+                </div>
               </div>
             </Card>
           </Link>
+        </div>
 
-          {/* ジャンル別特集（縦並び） */}
-          {allFeatures.length > 0 && (
-            <div className="space-y-3 mt-6">
-              <h3 className="text-sm font-bold text-muted-foreground">ジャンル別特集</h3>
-              <div className="grid gap-3">
-                {allFeatures.map((feature) => (
-                  <Link key={feature.slug} href={`/feature/${feature.slug}`}>
-                    <Card className="overflow-hidden border border-border hover:border-primary/50 transition-all">
-                      <div className="flex items-center gap-4 p-4">
-                        {feature.thumbnail_url && (
-                          <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden">
-                            <img
-                              src={feature.thumbnail_url}
-                              alt=""
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Sparkles className="h-3.5 w-3.5 text-primary" />
-                            <span className="text-sm font-bold text-foreground">{feature.name}特集 厳選10選</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground line-clamp-1">
-                            {feature.headline || `${feature.name}作品を厳選`}
-                          </p>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
-                      </div>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+        {/* 他のコンテンツへの誘導 */}
+        <section className="mt-10">
+          <FeaturedBanners
+            saleThumbnail={saleThumbnail}
+            saleMaxDiscountRate={saleMaxDiscountRate}
+            saleTargetDate={saleTargetDate}
+            mainWorkSaleEndDate={mainWorkSaleEndDate}
+            recommendationThumbnail={recommendationThumbnail}
+            recommendationDate={recommendationDate}
+            features={otherFeatures}
+          />
         </section>
       </main>
 

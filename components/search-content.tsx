@@ -13,7 +13,6 @@ import type {
   PlatformFilter,
   PriceFilter,
 } from "@/lib/search";
-import Link from "next/link";
 
 interface SearchContentProps {
   bannerData?: {
@@ -136,15 +135,6 @@ function SearchContentInner({ bannerData }: SearchContentProps) {
 
   return (
     <>
-      {/* コンパクトなパンくず */}
-      <div className="mb-2 text-xs text-muted-foreground">
-        <Link href="/" className="hover:text-foreground">
-          トップ
-        </Link>
-        <span className="mx-1">/</span>
-        <span>検索</span>
-      </div>
-
       {/* 今日のセール特集 & 今日のおすすめバナー */}
       <FeaturedBanners
         saleThumbnail={bannerData?.saleThumbnail}
