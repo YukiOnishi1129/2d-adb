@@ -42,18 +42,18 @@ export function FeaturedBanners({
     saleSubtext = `最大${saleMaxDiscountRate}%OFF！`;
   }
 
-  // 「1/12の厳選5作品！」のような形式
+  // ペルソナ向けサブテキスト
   const recommendationSubtext = recommendationDate
-    ? `${formatShortDate(recommendationDate)}の厳選5作品！`
-    : "迷ったらコレ！TOP5";
+    ? `迷ったらここから選べばハズレなし`
+    : "迷ったらコレ聴いとけ";
 
   const hasFeatures = features.length > 0;
 
   return (
     <div className="mb-6 space-y-3 md:space-y-4">
-      {/* 上段: 編集部おすすめとセール特集（2カラム） */}
+      {/* 上段: 今日の間違いないやつとセール特集（2カラム） */}
       <div className="grid grid-cols-2 gap-3 md:gap-4">
-      {/* 編集部おすすめ（左） */}
+      {/* 今日の間違いないやつ（左） */}
       <Link href="/recommendations">
         <Card className="overflow-hidden border border-amber-500/30 hover:border-amber-500/50 transition-all h-full">
           {/* スマホ: 画像大きめ + オーバーレイテキスト */}
@@ -69,7 +69,7 @@ export function FeaturedBanners({
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <Trophy className="h-3.5 w-3.5 text-amber-400" />
-                    <span className="text-xs font-bold text-white">編集部おすすめ</span>
+                    <span className="text-xs font-bold text-white">今日の間違いないやつ</span>
                   </div>
                   <p className="text-[10px] font-bold text-white/80">
                     {recommendationSubtext}
@@ -82,7 +82,7 @@ export function FeaturedBanners({
                   <Trophy className="h-5 w-5 text-amber-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="text-xs font-bold text-amber-500">編集部おすすめ</span>
+                  <span className="text-xs font-bold text-amber-500">今日の間違いないやつ</span>
                 </div>
               </div>
             )}
@@ -107,7 +107,7 @@ export function FeaturedBanners({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <Trophy className="h-5 w-5 text-amber-500" />
-                <span className="text-base font-bold text-amber-500">編集部おすすめ</span>
+                <span className="text-base font-bold text-amber-500">今日の間違いないやつ</span>
               </div>
               <p className="text-sm font-bold text-muted-foreground">
                 {recommendationSubtext}
