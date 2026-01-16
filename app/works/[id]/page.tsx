@@ -40,18 +40,18 @@ function formatPrice(price: number): string {
 }
 
 function getCtaLabel(category: string | null | undefined): string {
-  if (!category) return "購入する";
+  if (!category) return "詳細を見る";
   const cat = category.toLowerCase();
   if (cat === "asmr" || cat === "音声作品") {
-    return "🎧 無料で試聴";
+    return "🎧 試聴してみる";
   }
   if (cat === "game" || cat === "ゲーム") {
-    return "🎮 体験版あり";
+    return "🎮 体験版で遊ぶ";
   }
   if (cat === "動画" || cat === "video") {
-    return "🎬 無料で視聴";
+    return "🎬 サンプルを見る";
   }
-  return "購入する";
+  return "詳細を見る";
 }
 
 // IDまたはRJコードで作品を取得
@@ -561,6 +561,18 @@ export default async function WorkDetailPage({ params }: Props) {
             />
           )}
 
+          {/* 購入後押しバナー（価格テーブル直前） */}
+          {(work.aiAppealPoints || work.aiRecommendReason) && (
+            <div className="p-4 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 border border-amber-200 dark:border-amber-800">
+              <p className="text-sm font-bold text-amber-800 dark:text-amber-200 mb-1">
+                💡 買う前にチェック
+              </p>
+              <p className="text-sm text-amber-900 dark:text-amber-100">
+                {work.aiAppealPoints || work.aiRecommendReason}
+              </p>
+            </div>
+          )}
+
           {/* 価格比較テーブル */}
           <Card>
             <CardContent className="p-0">
@@ -581,7 +593,7 @@ export default async function WorkDetailPage({ params }: Props) {
                 </thead>
                 <tbody>
                   {work.priceDlsite && (
-                    <tr className="border-t border-border">
+                    <tr className={`border-t border-border ${hasBothPrices && cheaperPlatform === "DLsite" ? "bg-emerald-50 dark:bg-emerald-950/50" : ""}`}>
                       <td className="px-2 sm:px-4 py-3">
                         <div className="flex flex-col gap-1">
                           <span className="font-medium text-foreground">
@@ -590,7 +602,7 @@ export default async function WorkDetailPage({ params }: Props) {
                           {hasBothPrices && cheaperPlatform === "DLsite" && (
                             <Badge
                               variant="outline"
-                              className="w-fit text-[10px]"
+                              className="w-fit text-[10px] border-emerald-500 text-emerald-600 dark:text-emerald-400"
                             >
                               最安
                             </Badge>
@@ -633,7 +645,7 @@ export default async function WorkDetailPage({ params }: Props) {
                           <Button
                             size="sm"
                             asChild
-                            className="bg-emerald-600 hover:bg-emerald-700 font-bold"
+                            className={`font-bold ${work.discountRateDlsite && work.discountRateDlsite > 0 ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
                           >
                             <a
                               href={work.dlsiteUrl}
@@ -652,7 +664,7 @@ export default async function WorkDetailPage({ params }: Props) {
                     </tr>
                   )}
                   {work.priceFanza && (
-                    <tr className="border-t border-border">
+                    <tr className={`border-t border-border ${hasBothPrices && cheaperPlatform === "FANZA" ? "bg-emerald-50 dark:bg-emerald-950/50" : ""}`}>
                       <td className="px-2 sm:px-4 py-3">
                         <div className="flex flex-col gap-1">
                           <span className="font-medium text-foreground">
@@ -661,7 +673,7 @@ export default async function WorkDetailPage({ params }: Props) {
                           {hasBothPrices && cheaperPlatform === "FANZA" && (
                             <Badge
                               variant="outline"
-                              className="w-fit text-[10px]"
+                              className="w-fit text-[10px] border-emerald-500 text-emerald-600 dark:text-emerald-400"
                             >
                               最安
                             </Badge>
@@ -702,7 +714,7 @@ export default async function WorkDetailPage({ params }: Props) {
                           <Button
                             size="sm"
                             asChild
-                            className="bg-emerald-600 hover:bg-emerald-700 font-bold"
+                            className={`font-bold ${work.discountRateFanza && work.discountRateFanza > 0 ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
                           >
                             <a
                               href={work.fanzaUrl}

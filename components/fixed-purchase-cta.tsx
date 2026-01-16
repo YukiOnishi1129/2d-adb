@@ -18,18 +18,18 @@ interface FixedPurchaseCtaProps {
 }
 
 function getCtaLabel(category: string | null | undefined): string {
-  if (!category) return "購入する";
+  if (!category) return "詳細を見る";
   const cat = category.toLowerCase();
   if (cat === "asmr" || cat === "音声作品") {
-    return "🎧 無料で試聴";
+    return "🎧 試聴してみる";
   }
   if (cat === "game" || cat === "ゲーム") {
-    return "🎮 体験版あり";
+    return "🎮 体験版で遊ぶ";
   }
   if (cat === "動画" || cat === "video") {
-    return "🎬 無料で視聴";
+    return "🎬 サンプルを見る";
   }
-  return "購入する";
+  return "詳細を見る";
 }
 
 function formatPrice(price: number): string {
@@ -143,10 +143,14 @@ export function FixedPurchaseCta({
           </div>
         </div>
 
-        {/* 購入ボタン - 緑系でCVR向上 */}
+        {/* 購入ボタン - セール時はオレンジ系で緊急性、通常時は緑系 */}
         <Button
           asChild
-          className="flex-shrink-0 gap-2 bg-emerald-600 hover:bg-emerald-700 font-bold"
+          className={`flex-shrink-0 gap-2 font-bold ${
+            isOnSale
+              ? "bg-orange-500 hover:bg-orange-600"
+              : "bg-emerald-600 hover:bg-emerald-700"
+          }`}
         >
           <a href={cheaper.url} target="_blank" rel="noopener noreferrer">
             {getCtaLabel(category)}

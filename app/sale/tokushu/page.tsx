@@ -264,7 +264,7 @@ function MainFocusCard({
             >
               <Button variant="outline" className="w-full font-bold">
                 <Play className="h-4 w-4 mr-2" />
-                {isASMR ? "無料で試聴する" : "体験版を見る"}
+                {isASMR ? "試聴してみる" : "体験版で遊ぶ"}
                 <ExternalLink className="h-3 w-3 ml-1" />
               </Button>
             </a>
@@ -430,7 +430,7 @@ function SubCard({
             >
               <Button variant="outline" size="sm" className="w-full text-xs font-bold">
                 <Play className="h-3 w-3 mr-1" />
-                {isASMR ? "試聴する" : "体験版"}
+                {isASMR ? "試聴してみる" : "体験版で遊ぶ"}
               </Button>
             </a>
           )}
