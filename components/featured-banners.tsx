@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Sparkles, Trophy, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { FeatureCarousel, FeatureGridCarousel } from "@/components/feature-carousel";
+import type { DbFeatureRecommendation } from "@/lib/db";
 
 interface FeaturedBannersProps {
   saleThumbnail?: string | null;
@@ -9,6 +11,7 @@ interface FeaturedBannersProps {
   mainWorkSaleEndDate?: string | null;
   recommendationThumbnail?: string | null;
   recommendationDate?: string | null;
+  features?: DbFeatureRecommendation[];
 }
 
 // 日付を「1/15」形式にフォーマット
@@ -24,6 +27,7 @@ export function FeaturedBanners({
   mainWorkSaleEndDate,
   recommendationThumbnail,
   recommendationDate,
+  features = [],
 }: FeaturedBannersProps) {
   // メインタイトル: 「1/14のセール特集」のような形式
   const saleTitle = saleTargetDate
@@ -42,8 +46,13 @@ export function FeaturedBanners({
   const recommendationSubtext = recommendationDate
     ? `${formatShortDate(recommendationDate)}の厳選5作品！`
     : "迷ったらコレ！TOP5";
+
+  const hasFeatures = features.length > 0;
+
   return (
-    <div className="mb-6 grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4">
+    <div className="mb-6 space-y-3 md:space-y-4">
+      {/* 上段: 編集部おすすめとセール特集（2カラム） */}
+      <div className="grid grid-cols-2 gap-3 md:gap-4">
       {/* 編集部おすすめ（左） */}
       <Link href="/recommendations">
         <Card className="overflow-hidden border border-amber-500/30 hover:border-amber-500/50 transition-all h-full">
@@ -97,10 +106,10 @@ export function FeaturedBanners({
             )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <Trophy className="h-4 w-4 text-amber-500" />
-                <span className="text-sm font-bold text-amber-500">編集部おすすめ</span>
+                <Trophy className="h-5 w-5 text-amber-500" />
+                <span className="text-base font-bold text-amber-500">編集部おすすめ</span>
               </div>
-              <p className="text-xs font-bold text-muted-foreground">
+              <p className="text-sm font-bold text-muted-foreground">
                 {recommendationSubtext}
               </p>
             </div>
@@ -162,10 +171,10 @@ export function FeaturedBanners({
             )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <Sparkles className="h-4 w-4 text-sale" />
-                <span className="text-sm font-bold text-sale">{saleTitle}</span>
+                <Sparkles className="h-5 w-5 text-sale" />
+                <span className="text-base font-bold text-sale">{saleTitle}</span>
               </div>
-              <p className="text-xs font-bold text-muted-foreground">
+              <p className="text-sm font-bold text-muted-foreground">
                 {saleSubtext}
               </p>
             </div>
@@ -173,6 +182,22 @@ export function FeaturedBanners({
           </div>
         </Card>
       </Link>
+
+      </div>
+
+      {/* 下段: キーワード特集 */}
+      {hasFeatures && (
+        <>
+          {/* スマホ: カルーセル */}
+          <div className="md:hidden">
+            <FeatureCarousel features={features} />
+          </div>
+          {/* PC: 横スライドカルーセル（5カラム表示） */}
+          <div className="hidden md:block">
+            <FeatureGridCarousel features={features} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

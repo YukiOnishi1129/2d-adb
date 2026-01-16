@@ -678,6 +678,55 @@ export async function getRelatedWorks(
   return results;
 }
 
+// 特集ページデータの型定義
+export interface DbFeatureRecommendation {
+  id: number;
+  slug: string;
+  name: string;
+  headline: string | null;
+  description: string | null;
+  asmr_works: { work_id: number; reason: string; target_audience: string; thumbnail_url?: string }[] | null;
+  game_works: { work_id: number; reason: string; target_audience: string; thumbnail_url?: string }[] | null;
+  thumbnail_url: string | null;
+  asmr_count: number;
+  game_count: number;
+  updated_at: string;
+}
+
+// 特集ページデータをslugで取得
+export async function getFeatureBySlug(slug: string): Promise<DbFeatureRecommendation | null> {
+  const result = await pool.query<DbFeatureRecommendation>(`
+    SELECT
+      id, slug, name, headline, description,
+      asmr_works, game_works, thumbnail_url,
+      asmr_count, game_count, updated_at::text
+    FROM feature_recommendations
+    WHERE slug = $1
+  `, [slug]);
+  return result.rows[0] || null;
+}
+
+// 全特集ページデータを取得
+export async function getAllFeatures(): Promise<DbFeatureRecommendation[]> {
+  const result = await pool.query<DbFeatureRecommendation>(`
+    SELECT
+      id, slug, name, headline, description,
+      asmr_works, game_works, thumbnail_url,
+      asmr_count, game_count, updated_at::text
+    FROM feature_recommendations
+    ORDER BY slug
+  `);
+  return result.rows;
+}
+
+// 全特集slugを取得（generateStaticParams用）
+export async function getAllFeatureSlugs(): Promise<string[]> {
+  const result = await pool.query<{ slug: string }>(`
+    SELECT slug FROM feature_recommendations
+  `);
+  return result.rows.map((r) => r.slug);
+}
+
 // DB接続を閉じる
 export async function closeDb(): Promise<void> {
   await pool.end();

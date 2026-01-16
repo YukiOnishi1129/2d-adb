@@ -25,6 +25,7 @@ import {
   getVoiceRankingWorks,
   getSaleWorks,
   getRelatedWorks,
+  getAllFeatures,
 } from "@/lib/db";
 import { dbWorkToWork } from "@/lib/types";
 import Link from "next/link";
@@ -155,15 +156,36 @@ export default async function WorkDetailPage({ params }: Props) {
 
   const work = dbWorkToWork(dbWork);
 
-  // バナー用データ取得 + 関連作品
-  const [saleFeature, dailyRecommendation, dbVoiceRanking, dbSaleWorks, dbRelatedWorks] = await Promise.all([
+  // バナー用データ取得 + 関連作品 + 特集データ
+  const [saleFeature, dailyRecommendation, dbVoiceRanking, dbSaleWorks, dbRelatedWorks, allFeatures] = await Promise.all([
     getLatestSaleFeature(),
     getLatestDailyRecommendation(),
     getVoiceRankingWorks(1),
     getSaleWorks(1),
     getRelatedWorks(work.id, 4),
+    getAllFeatures(),
   ]);
   const relatedWorks = dbRelatedWorks.map(dbWorkToWork);
+
+  // 作品がマッチする特集を検索（タグ・タイトルで判定）
+  const FEATURE_TAG_MAP: Record<string, string[]> = {
+    "nipple": ["乳首責め", "乳首", "乳首いじり"],
+    "onasapo": ["オナサポ", "オナニーサポート"],
+    "edging": ["射精管理", "寸止め", "焦らし"],
+  };
+
+  const matchedFeatures = allFeatures.filter((feature) => {
+    const tags = FEATURE_TAG_MAP[feature.slug] || [];
+    // ai_tagsでマッチ
+    if (work.aiTags?.some(tag => tags.some(ft => tag.includes(ft)))) {
+      return true;
+    }
+    // タイトルでマッチ
+    if (work.title && tags.some(ft => work.title.includes(ft))) {
+      return true;
+    }
+    return false;
+  });
 
   // セール特集のメイン作品のサムネイルを取得
   const saleFeatureMainWork = saleFeature?.main_work_id
@@ -359,6 +381,23 @@ export default async function WorkDetailPage({ params }: Props) {
                       className="cursor-pointer hover:opacity-80"
                     >
                       {tag}
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* 特集ページリンク */}
+            {matchedFeatures.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                <span className="text-sm text-muted-foreground">関連特集:</span>
+                {matchedFeatures.map((feature) => (
+                  <Link key={feature.slug} href={`/feature/${feature.slug}`}>
+                    <Badge
+                      variant="outline"
+                      className="cursor-pointer hover:bg-primary/10 border-primary/50 text-primary"
+                    >
+                      {feature.name}特集
                     </Badge>
                   </Link>
                 ))}
@@ -698,6 +737,36 @@ export default async function WorkDetailPage({ params }: Props) {
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
                 {relatedWorks.map((relatedWork) => (
                   <WorkCard key={relatedWork.id} work={relatedWork} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 特集ページバナー */}
+          {allFeatures.length > 0 && (
+            <section className="mt-10 space-y-3">
+              <h2 className="text-lg font-bold text-foreground">特集ページ</h2>
+              <div className="grid gap-3 md:grid-cols-3">
+                {allFeatures.map((feature) => (
+                  <Link key={feature.slug} href={`/feature/${feature.slug}`}>
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-purple-500/30 hover:border-purple-500/50 transition-all bg-card">
+                      {feature.thumbnail_url && (
+                        <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden">
+                          <img
+                            src={feature.thumbnail_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm font-bold text-purple-500">{feature.name}特集</span>
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {feature.headline || `${feature.name}作品を厳選`}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
             </section>
