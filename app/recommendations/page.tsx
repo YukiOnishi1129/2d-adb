@@ -6,9 +6,9 @@ import { Card } from "@/components/ui/card";
 import {
   getLatestDailyRecommendation,
   getWorksByIds,
-  getDlsiteRankingWorks,
   getLatestSaleFeature,
   getWorkById,
+  getAllFeatures,
 } from "@/lib/db";
 import { dbWorkToWork } from "@/lib/types";
 import type { Work } from "@/lib/types";
@@ -22,9 +22,8 @@ import {
   Trophy,
   ThumbsUp,
   Users,
-  Flame,
+  Sparkles,
   ChevronRight,
-  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -281,11 +280,11 @@ export default async function RecommendationsPage() {
   const asmrWorkIds = (recommendation.asmr_works || []).map(w => w.work_id);
   const gameWorkIds = (recommendation.game_works || []).map(w => w.work_id);
 
-  const [asmrDbWorks, gameDbWorks, rankingDbWorks, saleFeature] = await Promise.all([
+  const [asmrDbWorks, gameDbWorks, saleFeature, allFeatures] = await Promise.all([
     getWorksByIds(asmrWorkIds),
     getWorksByIds(gameWorkIds),
-    getDlsiteRankingWorks(1), // CTA用に1件だけ取得
     getLatestSaleFeature(),
+    getAllFeatures(),
   ]);
 
   // セール特集のメイン作品を取得
@@ -297,24 +296,7 @@ export default async function RecommendationsPage() {
   const gameWorks = gameDbWorks.map(dbWorkToWork);
   const saleThumbnail = saleFeatureMainWork?.thumbnail_url || null;
   const saleTargetDate = saleFeature?.target_date;
-  const mainWorkSaleEndDate = saleFeatureMainWork?.sale_end_date_dlsite || saleFeatureMainWork?.sale_end_date_fanza;
   const saleMaxDiscountRate = saleFeature?.max_discount_rate;
-  const rankingThumbnail = rankingDbWorks[0]?.thumbnail_url;
-
-  // セール特集のタイトル・サブテキスト生成
-  const formatShortDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return `${date.getMonth() + 1}/${date.getDate()}`;
-  };
-  const saleTitle = saleTargetDate
-    ? `${formatShortDate(saleTargetDate)}のセール特集`
-    : "今日のセール特集";
-  let saleSubtext = "厳選おすすめ作品";
-  if (saleMaxDiscountRate && mainWorkSaleEndDate) {
-    saleSubtext = `${formatShortDate(mainWorkSaleEndDate)}まで最大${saleMaxDiscountRate}%OFF！`;
-  } else if (saleMaxDiscountRate) {
-    saleSubtext = `最大${saleMaxDiscountRate}%OFF！`;
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -356,29 +338,29 @@ export default async function RecommendationsPage() {
         />
 
         {/* 他のコンテンツへの誘導 */}
-        <section className="mt-10 space-y-6">
-          {/* セール特集への誘導 */}
+        <section className="mt-10 space-y-4">
+          {/* セール特集バナー */}
           <Link href="/sale/tokushu">
             <Card className="overflow-hidden border border-sale/30 hover:border-sale/50 transition-all">
               <div className="flex items-center gap-4 p-4">
-                {/* サムネイル（セール作品から取得） */}
                 {saleThumbnail && (
-                  <div className="relative w-20 h-20 shrink-0 rounded-lg overflow-hidden">
+                  <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden">
                     <img
                       src={saleThumbnail}
                       alt=""
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-linear-to-r from-sale/20 to-transparent" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <Flame className="h-4 w-4 text-sale" />
-                    <span className="text-sm font-bold text-sale">{saleTitle}</span>
+                    <Sparkles className="h-4 w-4 text-sale" />
+                    <span className="text-sm font-bold text-sale">
+                      {saleTargetDate ? `${new Date(saleTargetDate).getMonth() + 1}/${new Date(saleTargetDate).getDate()}のセール特集` : "セール特集"}
+                    </span>
                   </div>
                   <p className="text-xs font-bold text-muted-foreground">
-                    {saleSubtext}
+                    {saleMaxDiscountRate ? `最大${saleMaxDiscountRate}%OFF！` : "厳選おすすめ作品"}
                   </p>
                 </div>
                 <ChevronRight className="h-5 w-5 text-sale shrink-0" />
@@ -386,34 +368,41 @@ export default async function RecommendationsPage() {
             </Card>
           </Link>
 
-          {/* ランキングへの誘導 */}
-          <Link href="/">
-            <Card className="overflow-hidden border border-primary/30 hover:border-primary/50 transition-all">
-              <div className="flex items-center gap-4 p-4">
-                {/* サムネイル（ランキング上位作品から取得） */}
-                {rankingThumbnail && (
-                  <div className="relative w-20 h-20 shrink-0 rounded-lg overflow-hidden">
-                    <img
-                      src={rankingThumbnail}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-r from-primary/20 to-transparent" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <TrendingUp className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-bold text-primary">人気ランキング</span>
-                  </div>
-                  <p className="text-xs font-bold text-muted-foreground">
-                    DLsite・FANZAの注目作品！
-                  </p>
-                </div>
-                <ChevronRight className="h-5 w-5 text-primary shrink-0" />
+          {/* ジャンル別特集（縦並び） */}
+          {allFeatures.length > 0 && (
+            <div className="space-y-3 mt-6">
+              <h3 className="text-sm font-bold text-muted-foreground">ジャンル別特集</h3>
+              <div className="grid gap-3">
+                {allFeatures.map((feature) => (
+                  <Link key={feature.slug} href={`/feature/${feature.slug}`}>
+                    <Card className="overflow-hidden border border-border hover:border-primary/50 transition-all">
+                      <div className="flex items-center gap-4 p-4">
+                        {feature.thumbnail_url && (
+                          <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden">
+                            <img
+                              src={feature.thumbnail_url}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Sparkles className="h-3.5 w-3.5 text-primary" />
+                            <span className="text-sm font-bold text-foreground">{feature.name}特集 厳選10選</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {feature.headline || `${feature.name}作品を厳選`}
+                          </p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                      </div>
+                    </Card>
+                  </Link>
+                ))}
               </div>
-            </Card>
-          </Link>
+            </div>
+          )}
         </section>
       </main>
 

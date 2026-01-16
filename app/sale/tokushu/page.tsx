@@ -9,6 +9,7 @@ import {
   getLatestSaleFeature,
   getWorkById,
   getWorksByIds,
+  getAllFeatures,
 } from "@/lib/db";
 import { dbWorkToWork } from "@/lib/types";
 import type { Work } from "@/lib/types";
@@ -531,13 +532,12 @@ export default async function SaleTokushuPage() {
     : null;
 
   // 横スクロール用作品を取得
-  const cheapestWorks = await getWorksByIds(feature.cheapest_work_ids || []);
-  const highDiscountWorks = await getWorksByIds(
-    feature.high_discount_work_ids || []
-  );
-  const highRatingWorks = await getWorksByIds(
-    feature.high_rating_work_ids || []
-  );
+  const [cheapestWorks, highDiscountWorks, highRatingWorks, allFeatures] = await Promise.all([
+    getWorksByIds(feature.cheapest_work_ids || []),
+    getWorksByIds(feature.high_discount_work_ids || []),
+    getWorksByIds(feature.high_rating_work_ids || []),
+    getAllFeatures(),
+  ]);
 
   const mainWorkConverted = mainWork ? dbWorkToWork(mainWork) : null;
 
@@ -640,6 +640,42 @@ export default async function SaleTokushuPage() {
           icon={Star}
           works={highRatingWorks.map(dbWorkToWork)}
         />
+
+        {/* ジャンル別特集 */}
+        {allFeatures.length > 0 && (
+          <section className="mt-10 space-y-3">
+            <h3 className="text-sm font-bold text-muted-foreground">ジャンル別特集</h3>
+            <div className="grid gap-3">
+              {allFeatures.map((feature) => (
+                <Link key={feature.slug} href={`/feature/${feature.slug}`}>
+                  <Card className="overflow-hidden border border-border hover:border-primary/50 transition-all">
+                    <div className="flex items-center gap-4 p-4">
+                      {feature.thumbnail_url && (
+                        <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden">
+                          <img
+                            src={feature.thumbnail_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Sparkles className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-sm font-bold text-foreground">{feature.name}特集 厳選10選</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {feature.headline || `${feature.name}作品を厳選`}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
 
       <Footer />

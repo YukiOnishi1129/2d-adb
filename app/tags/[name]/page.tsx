@@ -61,7 +61,7 @@ export async function generateStaticParams(): Promise<{ name: string }[]> {
 }
 
 export const dynamic = "force-static";
-export const dynamicParams = false; // 生成されていないパスは404
+export const dynamicParams = false; // 静的エクスポートでは必須
 
 export default async function TagDetailPage({ params }: Props) {
   const { name } = await params;

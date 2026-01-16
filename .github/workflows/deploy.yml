@@ -2,7 +2,7 @@ name: Deploy to Shin Rental Server
 
 on:
   schedule:
-    - cron: '0 5 * * *'  # UTC 5:00 = JST 14:00
+    - cron: '30 5 * * *'  # UTC 5:30 = JST 14:30
   push:
     branches:
       - main

@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Flame, Library, User } from "lucide-react";
+import { Home, Search, Flame, Star, User } from "lucide-react";
 
 const navItems = [
   { href: "/", icon: Home, label: "ホーム" },
   { href: "/search", icon: Search, label: "検索" },
   { href: "/sale", icon: Flame, label: "セール" },
-  { href: "/works", icon: Library, label: "作品" },
+  { href: "/recommendations", icon: Star, label: "おすすめ" },
   { href: "/cv", icon: User, label: "声優" },
 ];
 
