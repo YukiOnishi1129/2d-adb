@@ -26,6 +26,9 @@ import {
   getSaleWorks,
   getRelatedWorks,
   getAllFeatures,
+  getPopularWorksByCircle,
+  getPopularWorksByActor,
+  getSimilarWorksByTags,
 } from "@/lib/db";
 import { dbWorkToWork } from "@/lib/types";
 import Link from "next/link";
@@ -171,6 +174,17 @@ export default async function WorkDetailPage({ params }: Props) {
   ]);
   const relatedWorks = dbRelatedWorks.map(dbWorkToWork);
 
+  // 同じサークル/CVの人気作品 + タグベースのおすすめ
+  const mainActor = work.actors?.[0]; // 最初のCV
+  const [dbCircleWorks, dbActorWorks, dbSimilarWorks] = await Promise.all([
+    work.circleId ? getPopularWorksByCircle(work.circleId, work.id, 4) : Promise.resolve([]),
+    mainActor ? getPopularWorksByActor(mainActor, work.id, 4) : Promise.resolve([]),
+    getSimilarWorksByTags(work.id, work.aiTags || [], 4),
+  ]);
+  const circleWorks = dbCircleWorks.map(dbWorkToWork);
+  const actorWorks = dbActorWorks.map(dbWorkToWork);
+  const similarWorks = dbSimilarWorks.map(dbWorkToWork);
+
   // 作品がマッチする特集を検索（タグ・タイトルで判定）
   const FEATURE_TAG_MAP: Record<string, string[]> = {
     "nipple": ["乳首責め", "乳首", "乳首いじり"],
@@ -295,6 +309,19 @@ export default async function WorkDetailPage({ params }: Props) {
               {work.category}
             </Badge>
           )}
+          {/* 高評価・レビュー数バッジ（実データ） */}
+          <div className="absolute bottom-4 left-4 flex gap-2">
+            {work.ratingDlsite && work.ratingDlsite >= 4.5 && (
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/90 text-white text-xs font-bold backdrop-blur-sm">
+                ★ 高評価
+              </div>
+            )}
+            {work.reviewCountDlsite && work.reviewCountDlsite >= 10 && (
+              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-black/70 text-white text-xs font-medium backdrop-blur-sm">
+                💬 {work.reviewCountDlsite.toLocaleString()}件のレビュー
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 作品情報セクション */}
@@ -742,6 +769,48 @@ export default async function WorkDetailPage({ params }: Props) {
             <p className="text-sm text-muted-foreground">
               発売日: {work.releaseDate}
             </p>
+          )}
+
+          {/* 同じCVの人気作品 */}
+          {actorWorks.length > 0 && mainActor && (
+            <section className="mt-10">
+              <h2 className="mb-4 text-lg font-bold text-foreground">
+                🎤 {mainActor}の他の人気作品
+              </h2>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+                {actorWorks.map((actorWork) => (
+                  <WorkCard key={actorWork.id} work={actorWork} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 同じサークルの人気作品 */}
+          {circleWorks.length > 0 && work.circleName && (
+            <section className="mt-10">
+              <h2 className="mb-4 text-lg font-bold text-foreground">
+                🏠 {work.circleName}の他の人気作品
+              </h2>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+                {circleWorks.map((circleWork) => (
+                  <WorkCard key={circleWork.id} work={circleWork} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* この作品を買った人はこれも（タグベース） */}
+          {similarWorks.length > 0 && (
+            <section className="mt-10">
+              <h2 className="mb-4 text-lg font-bold text-foreground">
+                🛒 この作品が好きな人はこれも
+              </h2>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+                {similarWorks.map((similarWork) => (
+                  <WorkCard key={similarWork.id} work={similarWork} />
+                ))}
+              </div>
+            </section>
           )}
 
           {/* こちらもおすすめ */}

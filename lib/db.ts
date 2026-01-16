@@ -678,6 +678,81 @@ export async function getRelatedWorks(
   return results;
 }
 
+// 同じサークルの人気作品を取得（自分以外、評価順）
+export async function getPopularWorksByCircle(
+  circleId: number,
+  excludeWorkId: number,
+  limit: number = 4,
+): Promise<DbWork[]> {
+  const result = await pool.query<DbWork>(
+    `
+    SELECT ${WORK_SELECT_COLUMNS}
+    FROM works w
+    LEFT JOIN circles c ON w.circle_id = c.id
+    WHERE w.is_available = true
+      AND w.circle_id = $1
+      AND w.id != $2
+    ORDER BY
+      COALESCE(w.rating_dlsite, w.rating_fanza, 0) DESC,
+      w.release_date DESC NULLS LAST
+    LIMIT $3
+  `,
+    [circleId, excludeWorkId, limit],
+  );
+  return result.rows;
+}
+
+// 同じCVの人気作品を取得（自分以外、評価順）
+export async function getPopularWorksByActor(
+  actorName: string,
+  excludeWorkId: number,
+  limit: number = 4,
+): Promise<DbWork[]> {
+  const result = await pool.query<DbWork>(
+    `
+    SELECT ${WORK_SELECT_COLUMNS}
+    FROM works w
+    LEFT JOIN circles c ON w.circle_id = c.id
+    WHERE w.is_available = true
+      AND $1 = ANY(w.cv_names)
+      AND w.id != $2
+    ORDER BY
+      COALESCE(w.rating_dlsite, w.rating_fanza, 0) DESC,
+      w.release_date DESC NULLS LAST
+    LIMIT $3
+  `,
+    [actorName, excludeWorkId, limit],
+  );
+  return result.rows;
+}
+
+// タグベースで「この作品を買った人はこれも」を取得
+export async function getSimilarWorksByTags(
+  workId: number,
+  tags: string[],
+  limit: number = 4,
+): Promise<DbWork[]> {
+  if (!tags || tags.length === 0) return [];
+
+  const result = await pool.query<DbWork>(
+    `
+    SELECT ${WORK_SELECT_COLUMNS}
+    FROM works w
+    LEFT JOIN circles c ON w.circle_id = c.id
+    WHERE w.is_available = true
+      AND w.id != $1
+      AND w.ai_tags && $2
+    ORDER BY
+      array_length(ARRAY(SELECT unnest(w.ai_tags) INTERSECT SELECT unnest($2::text[])), 1) DESC NULLS LAST,
+      COALESCE(w.rating_dlsite, w.rating_fanza, 0) DESC,
+      w.release_date DESC NULLS LAST
+    LIMIT $3
+  `,
+    [workId, tags, limit],
+  );
+  return result.rows;
+}
+
 // 特集ページデータの型定義
 export interface DbFeatureRecommendation {
   id: number;

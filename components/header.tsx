@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SearchBox } from "@/components/search-box";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
 export function Header() {
@@ -33,8 +34,11 @@ export function Header() {
           </NavLink>
         </nav>
 
-        {/* 検索 */}
-        <SearchBox />
+        {/* 検索 + テーマ切り替え */}
+        <div className="flex items-center gap-2">
+          <SearchBox />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );
