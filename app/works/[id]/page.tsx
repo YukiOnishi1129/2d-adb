@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Breadcrumb } from "@/components/breadcrumb";
@@ -8,8 +7,6 @@ import { SaleTimer } from "@/components/sale-timer";
 import { SaleBannerCountdown } from "@/components/sale-banner-countdown";
 import { SpecTable } from "@/components/spec-table";
 import { FixedPurchaseCta } from "@/components/fixed-purchase-cta";
-import { FeaturedBanners } from "@/components/featured-banners";
-import { ThemeQueryProvider } from "@/components/theme-query-provider";
 import { SampleImageGallery } from "@/components/sample-image-gallery";
 import { WorkCard } from "@/components/work-card";
 import { Button } from "@/components/ui/button";
@@ -19,11 +16,6 @@ import {
   getWorkById,
   getWorkByRjCode,
   getAllWorkIds,
-  getLatestSaleFeature,
-  getLatestDailyRecommendation,
-  getWorksByIds,
-  getVoiceRankingWorks,
-  getSaleWorks,
   getRelatedWorks,
   getAllFeatures,
   getPopularWorksByCircle,
@@ -163,12 +155,8 @@ export default async function WorkDetailPage({ params }: Props) {
 
   const work = dbWorkToWork(dbWork);
 
-  // バナー用データ取得 + 関連作品 + 特集データ
-  const [saleFeature, dailyRecommendation, dbVoiceRanking, dbSaleWorks, dbRelatedWorks, allFeatures] = await Promise.all([
-    getLatestSaleFeature(),
-    getLatestDailyRecommendation(),
-    getVoiceRankingWorks(1),
-    getSaleWorks(1),
+  // 関連作品 + 特集データ
+  const [dbRelatedWorks, allFeatures] = await Promise.all([
     getRelatedWorks(work.id, 4),
     getAllFeatures(),
   ]);
@@ -205,24 +193,6 @@ export default async function WorkDetailPage({ params }: Props) {
     return false;
   });
 
-  // セール特集のメイン作品のサムネイルを取得
-  const saleFeatureMainWork = saleFeature?.main_work_id
-    ? await getWorkById(saleFeature.main_work_id)
-    : null;
-
-  // おすすめのASMR1位作品のサムネイルを取得
-  const recommendationWorkIds = dailyRecommendation?.asmr_works?.[0]?.work_id
-    ? [dailyRecommendation.asmr_works[0].work_id]
-    : [];
-  const recommendationWorks = recommendationWorkIds.length > 0
-    ? await getWorksByIds(recommendationWorkIds)
-    : [];
-
-  // バナー用サムネイル・セール特集日
-  const saleThumbnail = saleFeatureMainWork?.thumbnail_url || dbSaleWorks[0]?.thumbnail_url;
-  const saleTargetDate = saleFeature?.target_date;
-  const mainWorkSaleEndDate = saleFeatureMainWork?.sale_end_date_dlsite || saleFeatureMainWork?.sale_end_date_fanza;
-  const recommendationThumbnail = recommendationWorks[0]?.thumbnail_url || dbVoiceRanking[0]?.thumbnail_url;
   const isOnSale = work.isOnSale;
   const hasBothPrices = work.priceDlsite && work.priceFanza;
 
@@ -253,10 +223,6 @@ export default async function WorkDetailPage({ params }: Props) {
       <ProductJsonLd work={work} />
       <BreadcrumbJsonLd items={breadcrumbItems} />
 
-      {/* ?theme=dark クエリパラメータでダークモード対応 */}
-      <Suspense fallback={null}>
-        <ThemeQueryProvider />
-      </Suspense>
       <Header />
 
       {/* セール中固定バナー（スマホのみ） */}
@@ -271,16 +237,6 @@ export default async function WorkDetailPage({ params }: Props) {
       )}
 
       <main className="mx-auto max-w-5xl px-4 py-8">
-        {/* 今日のセール特集 & 今日のおすすめバナー */}
-        <FeaturedBanners
-          saleThumbnail={saleThumbnail}
-          saleMaxDiscountRate={saleFeature?.max_discount_rate}
-          saleTargetDate={saleTargetDate}
-          mainWorkSaleEndDate={mainWorkSaleEndDate}
-          recommendationThumbnail={recommendationThumbnail}
-          recommendationDate={dailyRecommendation?.target_date}
-        />
-
         <Breadcrumb items={breadcrumbItems} />
 
         {/* ヒーローセクション: メイン画像（sample_images[0]を優先、なければthumbnail） */}
