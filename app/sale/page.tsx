@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SaleFilterSort } from "@/components/sale-filter-sort";
@@ -12,6 +13,21 @@ import {
 } from "@/lib/db";
 import { dbWorkToWork } from "@/lib/types";
 import { Flame } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "セール中の作品一覧 | 2D-ADB",
+  description: "今お得に買えるASMR・同人音声・同人ゲームをまとめてチェック。割引率・価格順で並び替え可能。",
+  openGraph: {
+    title: "セール中の作品一覧 | 2D-ADB",
+    description: "今お得に買えるASMR・同人音声・同人ゲームをまとめてチェック。",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "セール中の作品一覧 | 2D-ADB",
+    description: "今お得に買えるASMR・同人音声・同人ゲームをまとめてチェック。",
+  },
+};
 
 export const dynamic = "force-static";
 

@@ -9,6 +9,7 @@ import { useRef } from "react";
 
 interface HorizontalScrollSectionProps {
   title: string;
+  subtitle?: string;
   href: string;
   works: Work[];
   showRankBadge?: boolean;
@@ -140,6 +141,7 @@ function getRankBadgeStyles(rank: number, color: string) {
 
 export function HorizontalScrollSection({
   title,
+  subtitle,
   href,
   works,
   showRankBadge = false,
@@ -153,7 +155,12 @@ export function HorizontalScrollSection({
     <section className="mb-4">
       {/* ヘッダー */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-foreground">{title}</h2>
+        <div>
+          <h2 className="text-xl font-bold text-foreground">{title}</h2>
+          {subtitle && (
+            <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+          )}
+        </div>
         <Link
           href={href}
           className="flex items-center gap-1 text-sm text-accent transition-colors hover:text-accent/80"

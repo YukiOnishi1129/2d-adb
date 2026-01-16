@@ -115,7 +115,8 @@ export default async function Home() {
         {/* ボイス・ASMRランキング（横スクロール＋金銀銅バッジ） */}
         {voiceRanking.length > 0 && (
           <HorizontalScrollSection
-            title="ボイス・ASMRランキング"
+            title="迷ったらこれ聴いとけ"
+            subtitle="ASMR売上ランキング"
             href="/search?genre=voice&sort=rank"
             works={voiceRanking}
             showRankBadge
@@ -126,7 +127,8 @@ export default async function Home() {
         {/* ゲームランキング（横スクロール＋金銀銅バッジ） */}
         {gameRanking.length > 0 && (
           <HorizontalScrollSection
-            title="ゲームランキング"
+            title="ゲームで迷ったらこれ"
+            subtitle="ゲーム売上ランキング"
             href="/search?genre=game&sort=rank"
             works={gameRanking}
             showRankBadge
@@ -137,7 +139,8 @@ export default async function Home() {
         {/* 高評価4.5以上（横スクロール） */}
         {highRatedWorks.length > 0 && (
           <HorizontalScrollSection
-            title="高評価（4.5以上）"
+            title="ハズレなしの高評価"
+            subtitle="評価4.5以上の厳選作品"
             href="/search?sort=rating"
             works={highRatedWorks}
           />
@@ -146,7 +149,8 @@ export default async function Home() {
         {/* DLsite人気ランキング（横スクロール＋金銀銅バッジ） */}
         {dlsiteRanking.length > 0 && (
           <HorizontalScrollSection
-            title="DLsite人気ランキング"
+            title="DLsiteで売れてる作品"
+            subtitle="人気ランキング"
             href="/search?platform=dlsite&sort=rank"
             works={dlsiteRanking}
             showRankBadge
@@ -157,7 +161,8 @@ export default async function Home() {
         {/* FANZAランキング（横スクロール＋金銀銅バッジ） */}
         {fanzaRanking.length > 0 && (
           <HorizontalScrollSection
-            title="FANZAランキング"
+            title="FANZAで売れてる作品"
+            subtitle="人気ランキング"
             href="/search?platform=fanza&sort=rank"
             works={fanzaRanking}
             showRankBadge
@@ -168,7 +173,8 @@ export default async function Home() {
         {/* 爆安コーナー（横スクロール） */}
         {bargainWorks.length > 0 && (
           <HorizontalScrollSection
-            title="爆安コーナー（500円以下）"
+            title="ワンコインで買える"
+            subtitle="500円以下の掘り出し物"
             href="/sale?max=500"
             works={bargainWorks}
           />
@@ -177,7 +183,8 @@ export default async function Home() {
         {/* セール中（横スクロール） */}
         {saleWorks.length > 0 && (
           <HorizontalScrollSection
-            title="セール中（割引率順）"
+            title="今がチャンス"
+            subtitle="セール中の作品"
             href="/sale"
             works={saleWorks}
           />
@@ -186,6 +193,7 @@ export default async function Home() {
         {/* 新着作品（横スクロール） */}
         <HorizontalScrollSection
           title="新着作品"
+          subtitle="最新リリース"
           href="/search?sort=new"
           works={newWorks}
         />

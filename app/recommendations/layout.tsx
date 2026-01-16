@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "編集部おすすめ | 2D-ADB",
-  description: "2D-ADB編集部が厳選したASMR・ゲームTOP5作品をご紹介",
+  title: "今日のおすすめ作品 | 2D-ADB",
+  description: "迷ったらここから選べばハズレなし。ASMR・ゲームの厳選10作品を毎日更新。",
   openGraph: {
-    title: "編集部おすすめ | 2D-ADB",
-    description: "2D-ADB編集部が厳選したASMR・ゲームTOP5作品をご紹介",
+    title: "今日のおすすめ作品 | 2D-ADB",
+    description: "迷ったらここから選べばハズレなし。ASMR・ゲームの厳選10作品を毎日更新。",
     images: [
       { url: "https://2d-adb.com/ogp/recommendation_ogp.png", width: 1200, height: 630 },
     ],
@@ -14,8 +14,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "編集部おすすめ | 2D-ADB",
-    description: "2D-ADB編集部が厳選したASMR・ゲームTOP5作品をご紹介",
+    title: "今日のおすすめ作品 | 2D-ADB",
+    description: "迷ったらここから選べばハズレなし。ASMR・ゲームの厳選10作品を毎日更新。",
     images: ["https://2d-adb.com/ogp/recommendation_ogp.png"],
   },
 };

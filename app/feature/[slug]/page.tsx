@@ -368,11 +368,11 @@ export default async function FeaturePage({
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="h-6 w-6 text-amber-500" />
             <h1 className="text-xl font-bold text-foreground">
-              {feature.headline || `${feature.name}特集`}
+              {feature.headline || `${feature.name}好きならこれ一択`}
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            {feature.description || `${feature.name}作品を厳選してお届け`}
+            {feature.description || `${feature.name}作品の中でもハズレなしの厳選10作品`}
           </p>
           <div className="mt-2 text-xs text-muted-foreground">
             {formatUpdatedAt(feature.updated_at)} 更新
@@ -381,7 +381,7 @@ export default async function FeaturePage({
 
         {/* ASMR部門 */}
         <CategorySection
-          title={`${feature.name} ASMR`}
+          title={`${feature.name}好きに刺さるASMR`}
           icon={Headphones}
           works={asmrWorks}
           recommendations={feature.asmr_works || []}
@@ -390,7 +390,7 @@ export default async function FeaturePage({
 
         {/* ゲーム部門 */}
         <CategorySection
-          title={`${feature.name} ゲーム`}
+          title={`${feature.name}好きにおすすめゲーム`}
           icon={Gamepad2}
           works={gameWorks}
           recommendations={feature.game_works || []}

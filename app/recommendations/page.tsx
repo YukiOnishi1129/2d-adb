@@ -312,7 +312,7 @@ export default async function RecommendationsPage() {
             </h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            当サイトの編集部が厳選した作品をご紹介
+            迷ったらここから選べばハズレなし。厳選10作品。
           </p>
           <div className="mt-2 text-xs text-muted-foreground">
             {recommendation.target_date} 更新
@@ -321,7 +321,7 @@ export default async function RecommendationsPage() {
 
         {/* ASMR部門 */}
         <CategorySection
-          title="ASMR部門TOP5"
+          title="迷ったらこれ聴いとけ ASMR"
           icon={Headphones}
           works={asmrWorks}
           recommendations={recommendation.asmr_works || []}
@@ -330,7 +330,7 @@ export default async function RecommendationsPage() {
 
         {/* ゲーム部門 */}
         <CategorySection
-          title="ゲーム部門TOP5"
+          title="間違いないやつ ゲーム"
           icon={Gamepad2}
           works={gameWorks}
           recommendations={recommendation.game_works || []}

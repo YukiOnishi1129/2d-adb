@@ -35,8 +35,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const title = "今日のセール特集 | 2D-ADB";
   const description = saleFeature?.main_headline
-    ? `${saleFeature.main_headline} - 今日買うべき厳選セール作品をご紹介`
-    : "今日買うべき厳選セール作品をご紹介";
+    ? `${saleFeature.main_headline} - セール中のおすすめ作品を厳選。迷ったらここから選べばハズレなし。`
+    : "セール中のおすすめ作品を厳選。迷ったらここから選べばハズレなし。";
 
   const ogpImageUrl = saleFeature?.ogp_image_url || undefined;
 
