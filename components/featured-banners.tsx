@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Sparkles, Trophy, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { FeatureCarousel, FeatureGridCarousel } from "@/components/feature-carousel";
-import type { DbFeatureRecommendation } from "@/lib/db";
+import type { DbFeatureRecommendation, DbVoiceActorFeature } from "@/lib/db";
 
 interface FeaturedBannersProps {
   saleThumbnail?: string | null;
@@ -12,6 +12,7 @@ interface FeaturedBannersProps {
   recommendationThumbnail?: string | null;
   recommendationDate?: string | null;
   features?: DbFeatureRecommendation[];
+  voiceActorFeatures?: DbVoiceActorFeature[];
 }
 
 // 日付を「1/15」形式にフォーマット
@@ -28,6 +29,7 @@ export function FeaturedBanners({
   recommendationThumbnail,
   recommendationDate,
   features = [],
+  voiceActorFeatures = [],
 }: FeaturedBannersProps) {
   // メインタイトル: 「1/14のセール特集」のような形式
   const saleTitle = saleTargetDate
@@ -47,7 +49,7 @@ export function FeaturedBanners({
     ? `迷ったらここから選べばハズレなし`
     : "迷ったらコレ聴いとけ";
 
-  const hasFeatures = features.length > 0;
+  const hasFeatures = features.length > 0 || voiceActorFeatures.length > 0;
 
   return (
     <div className="mb-6 space-y-3 md:space-y-4">
@@ -65,13 +67,19 @@ export function FeaturedBanners({
                   alt=""
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+                {/* 上下グラデーション */}
+                <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-b from-black/50 via-transparent to-transparent" />
+                {/* ラベル */}
+                <div className="absolute top-2 left-2 px-2.5 py-1 rounded-md text-sm font-bold text-white bg-amber-500" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>
+                  🏆 今日のおすすめ
+                </div>
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <Trophy className="h-3.5 w-3.5 text-amber-400" />
-                    <span className="text-xs font-bold text-white">今日の間違いないやつ</span>
+                    <Trophy className="h-3.5 w-3.5 text-amber-400" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.8))" }} />
+                    <span className="text-xs font-bold text-white" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>今日の間違いないやつ</span>
                   </div>
-                  <p className="text-[10px] font-bold text-white/80">
+                  <p className="text-[10px] font-bold text-white/80" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>
                     {recommendationSubtext}
                   </p>
                 </div>
@@ -130,13 +138,19 @@ export function FeaturedBanners({
                   alt=""
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+                {/* 上下グラデーション */}
+                <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-b from-black/50 via-transparent to-transparent" />
+                {/* ラベル */}
+                <div className="absolute top-2 left-2 px-2.5 py-1 rounded-md text-sm font-bold text-white bg-red-500" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>
+                  🔥 セール特集
+                </div>
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <Sparkles className="h-3.5 w-3.5 text-sale" />
-                    <span className="text-xs font-bold text-white">{saleTitle}</span>
+                    <Sparkles className="h-3.5 w-3.5 text-sale" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.8))" }} />
+                    <span className="text-xs font-bold text-white" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>{saleTitle}</span>
                   </div>
-                  <p className="text-[10px] font-bold text-white/80">
+                  <p className="text-[10px] font-bold text-white/80" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>
                     {saleSubtext}
                   </p>
                 </div>
@@ -185,16 +199,16 @@ export function FeaturedBanners({
 
       </div>
 
-      {/* 下段: キーワード特集 */}
+      {/* 下段: キーワード特集 + 声優特集（混合） */}
       {hasFeatures && (
         <>
           {/* スマホ: カルーセル */}
           <div className="md:hidden">
-            <FeatureCarousel features={features} />
+            <FeatureCarousel features={features} voiceActorFeatures={voiceActorFeatures} />
           </div>
           {/* PC: 横スライドカルーセル（5カラム表示） */}
           <div className="hidden md:block">
-            <FeatureGridCarousel features={features} />
+            <FeatureGridCarousel features={features} voiceActorFeatures={voiceActorFeatures} />
           </div>
         </>
       )}

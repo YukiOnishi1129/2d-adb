@@ -21,6 +21,7 @@ import {
   getLatestDailyRecommendation,
   getWorksByIds,
   getAllFeatures,
+  getAllVoiceActorFeatures,
 } from "@/lib/db";
 import { dbWorkToWork, dbActorToActor, dbTagToTag } from "@/lib/types";
 import Link from "next/link";
@@ -43,6 +44,7 @@ export default async function Home() {
     saleFeature,
     dailyRecommendation,
     features,
+    voiceActorFeatures,
   ] = await Promise.all([
     getSaleWorks(12),
     getNewWorks(12),
@@ -57,6 +59,7 @@ export default async function Home() {
     getLatestSaleFeature(),
     getLatestDailyRecommendation(),
     getAllFeatures(),
+    getAllVoiceActorFeatures(),
   ]);
 
   // セール特集のメイン作品のサムネイルを取得
@@ -107,6 +110,7 @@ export default async function Home() {
           recommendationThumbnail={recommendationThumbnail}
           recommendationDate={dailyRecommendation?.target_date}
           features={features}
+          voiceActorFeatures={voiceActorFeatures}
         />
 
         {/* トレンドチップ（コンパクト） */}

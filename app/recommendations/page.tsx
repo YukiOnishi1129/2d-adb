@@ -9,6 +9,7 @@ import {
   getLatestSaleFeature,
   getWorkById,
   getAllFeatures,
+  getAllVoiceActorFeatures,
 } from "@/lib/db";
 import { dbWorkToWork } from "@/lib/types";
 import type { Work } from "@/lib/types";
@@ -24,6 +25,8 @@ import {
   Users,
   Sparkles,
   ChevronRight,
+  Mic,
+  Heart,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -280,11 +283,12 @@ export default async function RecommendationsPage() {
   const asmrWorkIds = (recommendation.asmr_works || []).map(w => w.work_id);
   const gameWorkIds = (recommendation.game_works || []).map(w => w.work_id);
 
-  const [asmrDbWorks, gameDbWorks, saleFeature, allFeatures] = await Promise.all([
+  const [asmrDbWorks, gameDbWorks, saleFeature, allFeatures, voiceActorFeatures] = await Promise.all([
     getWorksByIds(asmrWorkIds),
     getWorksByIds(gameWorkIds),
     getLatestSaleFeature(),
     getAllFeatures(),
+    getAllVoiceActorFeatures(),
   ]);
 
   // セール特集のメイン作品を取得
@@ -368,14 +372,56 @@ export default async function RecommendationsPage() {
             </Card>
           </Link>
 
-          {/* ジャンル別特集（縦並び） */}
+          {/* 声優特集 */}
+          {voiceActorFeatures.length > 0 && (
+            <div className="space-y-3 mt-6">
+              <h3 className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+                <Mic className="h-4 w-4 text-pink-500" />
+                人気声優特集
+              </h3>
+              <div className="grid gap-3">
+                {voiceActorFeatures.slice(0, 5).map((va) => (
+                  <Link key={va.name} href={`/tokushu/cv/${encodeURIComponent(va.name)}`}>
+                    <Card className="overflow-hidden border border-pink-500/30 hover:border-pink-500/50 transition-all">
+                      <div className="flex items-center gap-4 p-4">
+                        {va.representative_thumbnail_url && (
+                          <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden">
+                            <img
+                              src={va.representative_thumbnail_url}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Mic className="h-3.5 w-3.5 text-pink-500" />
+                            <span className="text-sm font-bold text-foreground">{va.name}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {va.headline || `${va.name}のおすすめ作品`}
+                          </p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-pink-500 shrink-0" />
+                      </div>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 性癖特集 */}
           {allFeatures.length > 0 && (
             <div className="space-y-3 mt-6">
-              <h3 className="text-sm font-bold text-muted-foreground">ジャンル別特集</h3>
+              <h3 className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+                <Heart className="h-4 w-4 text-blue-500" />
+                性癖で選ぶ厳選特集
+              </h3>
               <div className="grid gap-3">
                 {allFeatures.map((feature) => (
                   <Link key={feature.slug} href={`/feature/${feature.slug}`}>
-                    <Card className="overflow-hidden border border-border hover:border-primary/50 transition-all">
+                    <Card className="overflow-hidden border border-blue-500/30 hover:border-blue-500/50 transition-all">
                       <div className="flex items-center gap-4 p-4">
                         {feature.thumbnail_url && (
                           <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden">
@@ -388,14 +434,14 @@ export default async function RecommendationsPage() {
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <Sparkles className="h-3.5 w-3.5 text-primary" />
-                            <span className="text-sm font-bold text-foreground">{feature.name}特集 厳選10選</span>
+                            <Heart className="h-3.5 w-3.5 text-blue-500" />
+                            <span className="text-sm font-bold text-foreground">{feature.name}特集</span>
                           </div>
                           <p className="text-xs text-muted-foreground line-clamp-1">
                             {feature.headline || `${feature.name}作品を厳選`}
                           </p>
                         </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                        <ChevronRight className="h-5 w-5 text-blue-500 shrink-0" />
                       </div>
                     </Card>
                   </Link>

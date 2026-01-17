@@ -802,6 +802,80 @@ export async function getAllFeatureSlugs(): Promise<string[]> {
   return result.rows.map((r) => r.slug);
 }
 
+// 声優特集データの型定義
+export interface DbVoiceActorFeature {
+  id: number;
+  name: string;
+  slug: string;
+  headline: string | null;
+  description: string | null;
+  representative_work_id: number | null;
+  representative_thumbnail_url: string | null;
+  recommended_works: { work_id: number; reason: string; target_audience: string; thumbnail_url?: string }[] | null;
+  sale_works: { work_id: number; discount_rate: number; thumbnail_url?: string }[] | null;
+  total_work_count: number;
+  solo_work_count: number;
+  avg_rating: number | null;
+  sale_count: number;
+  platform: string;
+  is_active: boolean;
+  updated_at: string;
+}
+
+// 声優特集データを名前で取得
+export async function getVoiceActorFeatureByName(name: string): Promise<DbVoiceActorFeature | null> {
+  const result = await pool.query<DbVoiceActorFeature>(`
+    SELECT
+      id, name, slug, headline, description,
+      representative_work_id, representative_thumbnail_url,
+      recommended_works, sale_works,
+      total_work_count, solo_work_count, avg_rating, sale_count,
+      platform, is_active, updated_at::text
+    FROM voice_actor_features
+    WHERE name = $1 AND is_active = true
+  `, [name]);
+  return result.rows[0] || null;
+}
+
+// 声優特集データをslugで取得
+export async function getVoiceActorFeatureBySlug(slug: string): Promise<DbVoiceActorFeature | null> {
+  const result = await pool.query<DbVoiceActorFeature>(`
+    SELECT
+      id, name, slug, headline, description,
+      representative_work_id, representative_thumbnail_url,
+      recommended_works, sale_works,
+      total_work_count, solo_work_count, avg_rating, sale_count,
+      platform, is_active, updated_at::text
+    FROM voice_actor_features
+    WHERE slug = $1 AND is_active = true
+  `, [slug]);
+  return result.rows[0] || null;
+}
+
+// 全声優特集データを取得
+export async function getAllVoiceActorFeatures(): Promise<DbVoiceActorFeature[]> {
+  const result = await pool.query<DbVoiceActorFeature>(`
+    SELECT
+      id, name, slug, headline, description,
+      representative_work_id, representative_thumbnail_url,
+      recommended_works, sale_works,
+      total_work_count, solo_work_count, avg_rating, sale_count,
+      platform, is_active, updated_at::text
+    FROM voice_actor_features
+    WHERE is_active = true
+    ORDER BY total_work_count DESC
+  `);
+  return result.rows;
+}
+
+// 全声優特集名を取得（generateStaticParams用）
+export async function getAllVoiceActorFeatureNames(): Promise<string[]> {
+  const result = await pool.query<{ name: string }>(`
+    SELECT name FROM voice_actor_features WHERE is_active = true
+  `);
+  return result.rows.map((r) => r.name);
+}
+
 // DB接続を閉じる
 export async function closeDb(): Promise<void> {
   await pool.end();

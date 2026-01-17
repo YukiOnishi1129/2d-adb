@@ -21,6 +21,8 @@ import {
   getPopularWorksByCircle,
   getPopularWorksByActor,
   getSimilarWorksByTags,
+  getAllVoiceActorFeatures,
+  getVoiceActorFeatureByName,
 } from "@/lib/db";
 import { dbWorkToWork } from "@/lib/types";
 import Link from "next/link";
@@ -156,9 +158,10 @@ export default async function WorkDetailPage({ params }: Props) {
   const work = dbWorkToWork(dbWork);
 
   // 関連作品 + 特集データ
-  const [dbRelatedWorks, allFeatures] = await Promise.all([
+  const [dbRelatedWorks, allFeatures, voiceActorFeatures] = await Promise.all([
     getRelatedWorks(work.id, 4),
     getAllFeatures(),
+    getAllVoiceActorFeatures(),
   ]);
   const relatedWorks = dbRelatedWorks.map(dbWorkToWork);
 
@@ -172,6 +175,12 @@ export default async function WorkDetailPage({ params }: Props) {
   const circleWorks = dbCircleWorks.map(dbWorkToWork);
   const actorWorks = dbActorWorks.map(dbWorkToWork);
   const similarWorks = dbSimilarWorks.map(dbWorkToWork);
+
+  // 作品の声優に特集があるかチェック（複数対応）
+  const actorFeaturesRaw = await Promise.all(
+    (work.actors || []).map(actor => getVoiceActorFeatureByName(actor))
+  );
+  const actorFeatures = actorFeaturesRaw.filter((f): f is NonNullable<typeof f> => f !== null);
 
   // 作品がマッチする特集を検索（タグ・タイトルで判定）
   const FEATURE_TAG_MAP: Record<string, string[]> = {
@@ -727,6 +736,55 @@ export default async function WorkDetailPage({ params }: Props) {
             </p>
           )}
 
+          {/* 声優特集バナー（この作品の声優に特集がある場合） */}
+          {actorFeatures.length > 0 && (
+            <section className="mt-10 space-y-3">
+              <h2 className="text-lg font-bold text-foreground">🎤 出演声優の特集ページ</h2>
+              <div className="grid gap-3 md:grid-cols-2">
+                {actorFeatures.map((feature) => (
+                  <Link key={feature.name} href={`/tokushu/cv/${encodeURIComponent(feature.name)}`}>
+                    <Card className="overflow-hidden border border-pink-500/30 hover:border-pink-500/50 transition-all">
+                      {feature.representative_thumbnail_url ? (
+                        <div className="relative aspect-[21/9] overflow-hidden">
+                          <img
+                            src={feature.representative_thumbnail_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent" />
+                          <div className="absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-bold text-white bg-pink-500" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>
+                            🎤 {feature.name}特集
+                          </div>
+                          <div className="absolute bottom-0 left-0 right-0 p-3">
+                            <p className="text-sm font-bold text-white mb-0.5" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>
+                              {feature.headline || `${feature.name}のおすすめASMR`}
+                            </p>
+                            <p className="text-xs text-white/80" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>
+                              全{feature.total_work_count}作品から厳選
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-4 p-4">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-pink-500/20 shrink-0">
+                            <span className="text-lg">🎤</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm font-bold text-pink-500">{feature.name}特集</span>
+                            <p className="text-xs text-muted-foreground line-clamp-1">
+                              {feature.headline || `${feature.name}のおすすめ作品`}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* 同じCVの人気作品 */}
           {actorWorks.length > 0 && mainActor && (
             <section className="mt-10">
@@ -783,14 +841,44 @@ export default async function WorkDetailPage({ params }: Props) {
             </section>
           )}
 
-          {/* 特集ページバナー */}
-          {allFeatures.length > 0 && (
+          {/* 声優特集 */}
+          {voiceActorFeatures.length > 0 && (
             <section className="mt-10 space-y-3">
-              <h2 className="text-lg font-bold text-foreground">特集ページ</h2>
+              <h2 className="text-lg font-bold text-foreground">🎤 人気声優特集</h2>
+              <div className="grid gap-3 md:grid-cols-3">
+                {voiceActorFeatures.slice(0, 6).map((va) => (
+                  <Link key={va.name} href={`/tokushu/cv/${encodeURIComponent(va.name)}`}>
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-pink-500/30 hover:border-pink-500/50 transition-all bg-card">
+                      {va.representative_thumbnail_url && (
+                        <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden">
+                          <img
+                            src={va.representative_thumbnail_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-sm font-bold text-pink-500">{va.name}</span>
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {va.headline || `${va.name}のおすすめ作品`}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 性癖特集 */}
+          {allFeatures.length > 0 && (
+            <section className="mt-8 space-y-3">
+              <h2 className="text-lg font-bold text-foreground">💙 性癖で選ぶ厳選特集</h2>
               <div className="grid gap-3 md:grid-cols-3">
                 {allFeatures.map((feature) => (
                   <Link key={feature.slug} href={`/feature/${feature.slug}`}>
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-purple-500/30 hover:border-purple-500/50 transition-all bg-card">
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-blue-500/30 hover:border-blue-500/50 transition-all bg-card">
                       {feature.thumbnail_url && (
                         <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden">
                           <img
@@ -801,7 +889,7 @@ export default async function WorkDetailPage({ params }: Props) {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm font-bold text-purple-500">{feature.name}特集</span>
+                        <span className="text-sm font-bold text-blue-500">{feature.name}特集</span>
                         <p className="text-xs text-muted-foreground line-clamp-1">
                           {feature.headline || `${feature.name}作品を厳選`}
                         </p>

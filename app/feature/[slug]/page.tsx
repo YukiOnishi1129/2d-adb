@@ -11,6 +11,7 @@ import {
   getLatestSaleFeature,
   getWorkById,
   getLatestDailyRecommendation,
+  getAllVoiceActorFeatures,
 } from "@/lib/db";
 import { dbWorkToWork } from "@/lib/types";
 import type { Work } from "@/lib/types";
@@ -27,6 +28,7 @@ import {
   Sparkles,
   ChevronRight,
   Search,
+  Mic,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -321,12 +323,13 @@ export default async function FeaturePage({
   const asmrWorkIds = (feature.asmr_works || []).slice(0, 5).map(w => w.work_id);
   const gameWorkIds = (feature.game_works || []).slice(0, 5).map(w => w.work_id);
 
-  const [asmrDbWorks, gameDbWorks, saleFeature, recommendation, allFeatures] = await Promise.all([
+  const [asmrDbWorks, gameDbWorks, saleFeature, recommendation, allFeatures, voiceActorFeatures] = await Promise.all([
     getWorksByIds(asmrWorkIds),
     getWorksByIds(gameWorkIds),
     getLatestSaleFeature(),
     getLatestDailyRecommendation(),
     getAllFeatures(),
+    getAllVoiceActorFeatures(),
   ]);
 
   // セール特集のメイン作品と編集部おすすめの1位作品を取得
@@ -424,8 +427,47 @@ export default async function FeaturePage({
           </Link>
         </div>
 
+        {/* 声優特集バナー */}
+        {voiceActorFeatures.length > 0 && (
+          <section className="mt-10 space-y-3">
+            <h3 className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+              <Mic className="h-4 w-4 text-pink-500" />
+              人気声優特集
+            </h3>
+            <div className="grid gap-3">
+              {voiceActorFeatures.slice(0, 5).map((va) => (
+                <Link key={va.name} href={`/tokushu/cv/${encodeURIComponent(va.name)}`}>
+                  <Card className="overflow-hidden border border-pink-500/30 hover:border-pink-500/50 transition-all">
+                    <div className="flex items-center gap-4 p-4">
+                      {va.representative_thumbnail_url && (
+                        <div className="relative w-24 h-24 shrink-0 rounded-lg overflow-hidden">
+                          <img
+                            src={va.representative_thumbnail_url}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Mic className="h-3.5 w-3.5 text-pink-500" />
+                          <span className="text-sm font-bold text-foreground">{va.name}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {va.headline || `${va.name}のおすすめ作品`}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-pink-500 shrink-0" />
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* 他のコンテンツへの誘導 */}
-        <section className="mt-10">
+        <section className="mt-8">
           <FeaturedBanners
             saleThumbnail={saleThumbnail}
             saleMaxDiscountRate={saleMaxDiscountRate}
