@@ -164,14 +164,16 @@ export async function getDlsiteRankingWorks(limit = 20): Promise<DbWork[]> {
   return result.rows;
 }
 
-// FANZAランキング作品を取得
+// FANZAランキング作品を取得（音声・ゲームのみ）
 export async function getFanzaRankingWorks(limit = 20): Promise<DbWork[]> {
   const result = await pool.query<DbWork>(
     `
     SELECT ${WORK_SELECT_COLUMNS}
     FROM works w
     LEFT JOIN circles c ON w.circle_id = c.id
-    WHERE w.is_available = true AND w.fanza_rank IS NOT NULL
+    WHERE w.is_available = true
+      AND w.fanza_rank IS NOT NULL
+      AND (w.genre ILIKE '%音声%' OR w.genre ILIKE '%ゲーム%')
     ORDER BY w.fanza_rank ASC
     LIMIT $1
   `,
