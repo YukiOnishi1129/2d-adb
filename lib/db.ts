@@ -207,7 +207,7 @@ export async function getVoiceRankingWorks(limit = 20): Promise<DbWork[]> {
     FROM works w
     LEFT JOIN circles c ON w.circle_id = c.id
     WHERE w.is_available = true
-      AND w.genre = '音声'
+      AND w.category = 'ASMR'
       AND (w.dlsite_rank IS NOT NULL OR w.fanza_rank IS NOT NULL)
     ORDER BY
       COALESCE(w.dlsite_rank, 9999) + COALESCE(w.fanza_rank, 9999) ASC,
@@ -227,7 +227,7 @@ export async function getGameRankingWorks(limit = 20): Promise<DbWork[]> {
     FROM works w
     LEFT JOIN circles c ON w.circle_id = c.id
     WHERE w.is_available = true
-      AND w.genre = 'ゲーム'
+      AND w.category = 'ゲーム'
       AND (w.dlsite_rank IS NOT NULL OR w.fanza_rank IS NOT NULL)
     ORDER BY
       COALESCE(w.dlsite_rank, 9999) + COALESCE(w.fanza_rank, 9999) ASC,
