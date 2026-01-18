@@ -34,6 +34,7 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FeaturedBanners } from "@/components/featured-banners";
+import { AffiliateLink } from "@/components/affiliate-link";
 
 interface Props {
   params: Promise<{ name: string }>;
@@ -222,13 +223,17 @@ function RecommendationCard({
 
         <div className="flex gap-2">
           {sampleUrl && (
-            <a href={sampleUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
-              <Button variant="outline" size="sm" className="w-full text-xs font-bold">
-                <Play className="h-3 w-3 mr-1" />
-                試聴してみる
-                <ExternalLink className="h-3 w-3 ml-1" />
-              </Button>
-            </a>
+            <AffiliateLink
+              platform={work.dlsiteProductId ? "dlsite" : "fanza"}
+              url={sampleUrl}
+              workId={work.id}
+              size="sm"
+              className="flex-1 w-full text-xs font-bold"
+            >
+              <Play className="h-3 w-3 mr-1" />
+              試聴してみる
+              <ExternalLink className="h-3 w-3 ml-1" />
+            </AffiliateLink>
           )}
           <Link href={`/works/${work.id}`} className="flex-1">
             <Button size="sm" className="w-full bg-sale hover:bg-sale/90 text-white text-xs font-bold">

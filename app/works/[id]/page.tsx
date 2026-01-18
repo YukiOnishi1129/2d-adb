@@ -9,7 +9,7 @@ import { SpecTable } from "@/components/spec-table";
 import { FixedPurchaseCta } from "@/components/fixed-purchase-cta";
 import { SampleImageGallery } from "@/components/sample-image-gallery";
 import { WorkCard } from "@/components/work-card";
-import { Button } from "@/components/ui/button";
+import { AffiliateLink } from "@/components/affiliate-link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -633,25 +633,16 @@ export default async function WorkDetailPage({ params }: Props) {
                         </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 text-center">
-                        {work.dlsiteUrl ? (
-                          <Button
-                            size="sm"
-                            asChild
-                            className={`font-bold ${work.discountRateDlsite && work.discountRateDlsite > 0 ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
-                          >
-                            <a
-                              href={work.dlsiteUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {getCtaLabel(work.category)}
-                            </a>
-                          </Button>
-                        ) : (
-                          <Button size="sm" disabled className="font-bold">
-                            {getCtaLabel(work.category)}
-                          </Button>
-                        )}
+                        <AffiliateLink
+                          platform="dlsite"
+                          url={work.dlsiteUrl || ""}
+                          productId={work.dlsiteProductId || undefined}
+                          workId={work.id}
+                          disabled={!work.dlsiteUrl}
+                          className={`font-bold ${work.discountRateDlsite && work.discountRateDlsite > 0 ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
+                        >
+                          {getCtaLabel(work.category)}
+                        </AffiliateLink>
                       </td>
                     </tr>
                   )}
@@ -702,25 +693,15 @@ export default async function WorkDetailPage({ params }: Props) {
                         </div>
                       </td>
                       <td className="px-2 sm:px-4 py-3 text-center">
-                        {work.fanzaUrl ? (
-                          <Button
-                            size="sm"
-                            asChild
-                            className={`font-bold ${work.discountRateFanza && work.discountRateFanza > 0 ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
-                          >
-                            <a
-                              href={work.fanzaUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              {getCtaLabel(work.category)}
-                            </a>
-                          </Button>
-                        ) : (
-                          <Button size="sm" disabled className="font-bold">
-                            {getCtaLabel(work.category)}
-                          </Button>
-                        )}
+                        <AffiliateLink
+                          platform="fanza"
+                          url={work.fanzaUrl || ""}
+                          workId={work.id}
+                          disabled={!work.fanzaUrl}
+                          className={`font-bold ${work.discountRateFanza && work.discountRateFanza > 0 ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
+                        >
+                          {getCtaLabel(work.category)}
+                        </AffiliateLink>
                       </td>
                     </tr>
                   )}

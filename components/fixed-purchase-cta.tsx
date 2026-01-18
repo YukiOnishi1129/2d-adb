@@ -3,6 +3,27 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+declare global {
+  interface Window {
+    gtag?: (
+      command: string,
+      action: string,
+      params?: Record<string, unknown>
+    ) => void;
+  }
+}
+
+// URLからproduct_idを抽出
+function extractProductId(url: string, platform: string): string | undefined {
+  if (platform === "DLsite") {
+    const match = url.match(/RJ\d+/i);
+    return match ? match[0].toUpperCase() : undefined;
+  } else {
+    const match = url.match(/d_\d+/);
+    return match ? match[0] : undefined;
+  }
+}
+
 interface FixedPurchaseCtaProps {
   priceDlsite: number | null | undefined; // セール価格適用済み
   priceFanza: number | null | undefined; // セール価格適用済み
@@ -152,7 +173,21 @@ export function FixedPurchaseCta({
               : "bg-emerald-600 hover:bg-emerald-700"
           }`}
         >
-          <a href={cheaper.url} target="_blank" rel="noopener noreferrer">
+          <a
+            href={cheaper.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              if (typeof window !== "undefined" && window.gtag && cheaper.url) {
+                const platform = cheaper.platform === "DLsite" ? "dlsite" : "fanza";
+                const productId = extractProductId(cheaper.url, cheaper.platform);
+                window.gtag("event", `${platform}_click`, {
+                  product_id: productId,
+                  source: "fixed_cta",
+                });
+              }
+            }}
+          >
             {getCtaLabel(category)}
           </a>
         </Button>

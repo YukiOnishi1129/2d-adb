@@ -29,6 +29,7 @@ import {
   Heart,
 } from "lucide-react";
 import Link from "next/link";
+import { AffiliateLink } from "@/components/affiliate-link";
 
 export const dynamic = "force-static";
 
@@ -259,18 +260,17 @@ function MainFocusCard({
         <div className="flex flex-col sm:flex-row gap-3">
           {/* 試聴/体験版ボタン */}
           {sampleUrl && (
-            <a
-              href={sampleUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1"
+            <AffiliateLink
+              platform={work.dlsiteProductId ? "dlsite" : "fanza"}
+              url={sampleUrl}
+              workId={work.id}
+              size="default"
+              className="flex-1 w-full font-bold"
             >
-              <Button variant="outline" className="w-full font-bold">
-                <Play className="h-4 w-4 mr-2" />
-                {isASMR ? "試聴してみる" : "体験版で遊ぶ"}
-                <ExternalLink className="h-3 w-3 ml-1" />
-              </Button>
-            </a>
+              <Play className="h-4 w-4 mr-2" />
+              {isASMR ? "試聴してみる" : "体験版で遊ぶ"}
+              <ExternalLink className="h-3 w-3 ml-1" />
+            </AffiliateLink>
           )}
           {/* 購入ボタン */}
           <Link href={`/works/${work.id}`} className="flex-1">
@@ -425,17 +425,16 @@ function SubCard({
         {/* ボタン */}
         <div className="flex gap-2">
           {sampleUrl && (
-            <a
-              href={sampleUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1"
+            <AffiliateLink
+              platform={work.dlsiteProductId ? "dlsite" : "fanza"}
+              url={sampleUrl}
+              workId={work.id}
+              size="sm"
+              className="flex-1 w-full text-xs font-bold"
             >
-              <Button variant="outline" size="sm" className="w-full text-xs font-bold">
-                <Play className="h-3 w-3 mr-1" />
-                {isASMR ? "試聴してみる" : "体験版で遊ぶ"}
-              </Button>
-            </a>
+              <Play className="h-3 w-3 mr-1" />
+              {isASMR ? "試聴してみる" : "体験版で遊ぶ"}
+            </AffiliateLink>
           )}
           <Link href={`/works/${work.id}`} className="flex-1">
             <Button size="sm" className="w-full bg-sale hover:bg-sale/90 text-white text-xs font-bold">
