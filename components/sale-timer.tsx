@@ -51,7 +51,7 @@ export function SaleTimer({ endDate, discountRate }: SaleTimerProps) {
         <Clock className="h-6 w-6 text-orange-500" />
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            {discountRate && <Badge variant="sale">{discountRate}%OFF</Badge>}
+            {discountRate && discountRate > 0 && <Badge variant="sale">{discountRate}%OFF</Badge>}
             <span className="text-sm text-muted-foreground">
               セール終了まで
             </span>

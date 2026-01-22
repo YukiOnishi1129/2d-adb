@@ -151,7 +151,7 @@ export function dbWorkToWork(dbWork: DbWork): Work {
     // 集計値
     lowestPrice: dbWork.lowest_price,
     maxDiscountRate: dbWork.max_discount_rate,
-    isOnSale: dbWork.is_on_sale ?? false,
+    isOnSale: Boolean(dbWork.is_on_sale),
     // ランキング情報
     dlsiteRank: dbWork.dlsite_rank,
     fanzaRank: dbWork.fanza_rank,

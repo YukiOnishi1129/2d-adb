@@ -212,7 +212,7 @@ export function HorizontalScrollSection({
                   )}
 
                   {/* セールバッジ */}
-                  {isOnSale && work.maxDiscountRate && (
+                  {isOnSale && work.maxDiscountRate && work.maxDiscountRate > 0 && (
                     <Badge
                       variant="sale"
                       className={`absolute ${showRankBadge ? "top-2 right-2" : "top-2 left-2"} text-xs font-bold`}

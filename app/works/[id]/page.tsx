@@ -235,7 +235,7 @@ export default async function WorkDetailPage({ params }: Props) {
       <Header />
 
       {/* セール中固定バナー（スマホのみ） */}
-      {isOnSale && saleEndDate && (
+      {isOnSale && saleEndDate && work.maxDiscountRate && work.maxDiscountRate > 0 && (
         <div className="sticky top-16 z-40 bg-linear-to-r from-red-500 to-orange-500 text-white py-1.5 px-4 shadow-md md:hidden">
           <div className="flex items-center justify-center gap-2 text-xs">
             <span className="font-bold">{work.maxDiscountRate}%OFF</span>
@@ -258,7 +258,7 @@ export default async function WorkDetailPage({ params }: Props) {
             alt={work.title}
             className="w-full max-h-[500px] object-contain bg-black/5"
           />
-          {isOnSale && work.maxDiscountRate && (
+          {isOnSale && work.maxDiscountRate && work.maxDiscountRate > 0 && (
             <Badge
               variant="sale"
               className="absolute top-4 left-4 text-lg px-3 py-1"
@@ -584,7 +584,7 @@ export default async function WorkDetailPage({ params }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {work.priceDlsite && (
+                  {work.priceDlsite !== null && work.priceDlsite !== undefined && (
                     <tr className={`border-t border-border ${hasBothPrices && cheaperPlatform === "DLsite" ? "bg-emerald-50 dark:bg-emerald-950/50" : ""}`}>
                       <td className="px-2 sm:px-4 py-3">
                         <div className="flex flex-col gap-1">
@@ -646,7 +646,7 @@ export default async function WorkDetailPage({ params }: Props) {
                       </td>
                     </tr>
                   )}
-                  {work.priceFanza && (
+                  {work.priceFanza !== null && work.priceFanza !== undefined && (
                     <tr className={`border-t border-border ${hasBothPrices && cheaperPlatform === "FANZA" ? "bg-emerald-50 dark:bg-emerald-950/50" : ""}`}>
                       <td className="px-2 sm:px-4 py-3">
                         <div className="flex flex-col gap-1">

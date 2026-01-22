@@ -162,7 +162,7 @@ export function WorkCard({ work }: WorkCardProps) {
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
           {/* セールバッジ */}
-          {isOnSale && work.maxDiscountRate && (
+          {isOnSale && work.maxDiscountRate && work.maxDiscountRate > 0 && (
             <Badge variant="sale" className="absolute top-2 left-2">
               {work.maxDiscountRate}%OFF
             </Badge>

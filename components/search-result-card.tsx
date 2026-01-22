@@ -49,7 +49,7 @@ export function SearchResultCard({ item }: SearchResultCardProps) {
             className="aspect-[4/3] w-full object-cover"
             loading="lazy"
           />
-          {item.dr && (
+          {item.dr && item.dr > 0 && (
             <Badge variant="sale" className="absolute left-2 top-2">
               {item.dr}%OFF
             </Badge>
@@ -108,7 +108,7 @@ export function SearchResultCard({ item }: SearchResultCardProps) {
               </span>
             )}
           </div>
-          {item.dr && (
+          {item.dr && item.dr > 0 && (
             <span className="text-xs text-muted-foreground line-through">
               ¥{item.dp.toLocaleString()}
             </span>
