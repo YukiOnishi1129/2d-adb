@@ -95,6 +95,38 @@ export interface Tag {
 // DBからの変換ヘルパー
 import type { DbWork, DbCircle, DbActor, DbTag } from "./db";
 
+// sample_imagesは文字列（JSON）または配列の両方に対応
+function parseSampleImages(
+  value: string | string[] | null | undefined
+): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+// user_reviewsは文字列（JSON）または配列の両方に対応
+function parseUserReviews(
+  value: string | UserReview[] | null | undefined
+): UserReview[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 export function dbWorkToWork(dbWork: DbWork): Work {
   return {
     id: dbWork.id,
@@ -108,7 +140,7 @@ export function dbWorkToWork(dbWork: DbWork): Work {
     dlsiteUrl: dbWork.dlsite_url,
     fanzaUrl: dbWork.fanza_url,
     thumbnailUrl: dbWork.thumbnail_url,
-    sampleImages: dbWork.sample_images ? JSON.parse(dbWork.sample_images) : [],
+    sampleImages: parseSampleImages(dbWork.sample_images),
     priceDlsite: dbWork.price_dlsite,
     priceFanza: dbWork.price_fanza,
     // プラットフォーム別セール情報
@@ -153,7 +185,7 @@ export function dbWorkToWork(dbWork: DbWork): Work {
     ratingFanza: dbWork.rating_fanza,
     reviewCountDlsite: dbWork.review_count_dlsite,
     reviewCountFanza: dbWork.review_count_fanza,
-    userReviews: dbWork.user_reviews ? JSON.parse(dbWork.user_reviews) : [],
+    userReviews: parseUserReviews(dbWork.user_reviews),
   };
 }
 
