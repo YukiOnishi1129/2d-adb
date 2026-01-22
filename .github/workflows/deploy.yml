@@ -73,6 +73,7 @@ jobs:
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
           rsync -avz --delete \
+            --exclude 'api/' \
             -e "ssh -p ${SSH_PORT}" \
             ./out/ \
             ${SSH_USERNAME}@${SSH_HOST}:~/2d-adb.com/public_html/
