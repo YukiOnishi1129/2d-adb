@@ -85,7 +85,7 @@ export async function getWorksByGenre(
 ): Promise<DbWork[]> {
   const works = await getWorks();
   const available = filterAvailable(works).filter(
-    (w) => w.genre && w.genre.toLowerCase().includes(genre.toLowerCase()),
+    (w) => w.genre?.toLowerCase().includes(genre.toLowerCase()),
   );
   const sorted = available.sort((a, b) => {
     const dateA = a.release_date || "";
@@ -314,7 +314,7 @@ export async function getActors(): Promise<DbActor[]> {
 export async function getWorksByActor(actorName: string): Promise<DbWork[]> {
   const works = await getWorks();
   const available = filterAvailable(works).filter(
-    (w) => w.cv_names && w.cv_names.includes(actorName),
+    (w) => w.cv_names?.includes(actorName),
   );
   const sorted = available.sort((a, b) => {
     const dateA = a.release_date || "";
@@ -347,7 +347,7 @@ export async function getTags(): Promise<DbTag[]> {
 export async function getWorksByTag(tagName: string): Promise<DbWork[]> {
   const works = await getWorks();
   const available = filterAvailable(works).filter(
-    (w) => w.ai_tags && w.ai_tags.includes(tagName),
+    (w) => w.ai_tags?.includes(tagName),
   );
   const sorted = available.sort((a, b) => {
     const dateA = a.release_date || "";
@@ -465,7 +465,7 @@ export async function getRelatedWorks(
   if (targetWork.cv_names && targetWork.cv_names.length > 0) {
     const cvNames = new Set(targetWork.cv_names);
     const matches = available
-      .filter((w) => w.cv_names && w.cv_names.some((n) => cvNames.has(n)))
+      .filter((w) => w.cv_names?.some((n) => cvNames.has(n)))
       .sort((a, b) => {
         const dateA = a.release_date || "";
         const dateB = b.release_date || "";
@@ -483,7 +483,7 @@ export async function getRelatedWorks(
   if (targetWork.ai_tags && targetWork.ai_tags.length > 0) {
     const tags = new Set(targetWork.ai_tags);
     const matches = available
-      .filter((w) => w.ai_tags && w.ai_tags.some((t) => tags.has(t)))
+      .filter((w) => w.ai_tags?.some((t) => tags.has(t)))
       .map((w) => ({
         work: w,
         matchCount: w.ai_tags
@@ -596,7 +596,7 @@ export async function getSimilarWorksByTags(
   const works = await getWorks();
   const available = filterAvailable(works).filter((w) => w.id !== workId);
   const matches = available
-    .filter((w) => w.ai_tags && w.ai_tags.some((t) => tagSet.has(t)))
+    .filter((w) => w.ai_tags?.some((t) => tagSet.has(t)))
     .map((w) => ({
       work: w,
       matchCount: w.ai_tags ? w.ai_tags.filter((t) => tagSet.has(t)).length : 0,
