@@ -5,7 +5,9 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { PageHeaderCard } from "@/components/page-header-card";
 import { WorkCard } from "@/components/work-card";
 import { Badge } from "@/components/ui/badge";
-import { getWorksByTag, getAllTagNames } from "@/lib/db";
+import { Card } from "@/components/ui/card";
+import { getWorksByTag, getAllTagNames, getFeatureByName } from "@/lib/db";
+import { Sparkles, ChevronRight } from "lucide-react";
 import { dbWorkToWork } from "@/lib/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -66,7 +68,10 @@ export const dynamicParams = false; // 静的エクスポートでは必須
 export default async function TagDetailPage({ params }: Props) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
-  const dbWorks = await getWorksByTag(decodedName);
+  const [dbWorks, relatedFeature] = await Promise.all([
+    getWorksByTag(decodedName),
+    getFeatureByName(decodedName),
+  ]);
 
   if (dbWorks.length === 0) {
     notFound();
@@ -102,6 +107,40 @@ export default async function TagDetailPage({ params }: Props) {
           title={`#${decodedName}`}
           subtitle={`${works.length}作品`}
         />
+
+        {/* 関連特集バナー */}
+        {relatedFeature && (
+          <div className="mb-8">
+            <Link href={`/feature/${relatedFeature.slug}`}>
+              <Card className="overflow-hidden border-2 border-amber-500/50 hover:border-amber-500 transition-all bg-linear-to-r from-amber-500/10 to-amber-500/5">
+                <div className="flex items-center gap-4 p-4">
+                  {relatedFeature.thumbnail_url && (
+                    <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden">
+                      <img
+                        src={relatedFeature.thumbnail_url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Sparkles className="h-4 w-4 text-amber-500" />
+                      <span className="text-sm font-bold text-foreground">
+                        {relatedFeature.name}特集
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-1">
+                      {relatedFeature.headline ||
+                        `厳選${relatedFeature.name}作品をチェック`}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-amber-500 shrink-0" />
+                </div>
+              </Card>
+            </Link>
+          </div>
+        )}
 
         {/* 関連声優 */}
         {sortedCVs.length > 0 && (

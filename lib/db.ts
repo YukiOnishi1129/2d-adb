@@ -635,6 +635,14 @@ export async function getAllFeatureSlugs(): Promise<string[]> {
   return features.map((f) => f.slug);
 }
 
+// 特集ページデータを名前で取得（タグページからの導線用）
+export async function getFeatureByName(
+  name: string,
+): Promise<DbFeatureRecommendation | null> {
+  const features = await getFeatureRecommendationsData();
+  return features.find((f) => f.name === name) || null;
+}
+
 // 声優特集データを名前で取得
 export async function getVoiceActorFeatureByName(
   name: string,
