@@ -19,6 +19,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Record start time
+        run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -50,6 +53,24 @@ jobs:
           R2_PUBLIC_DOMAIN: ${{ secrets.R2_PUBLIC_DOMAIN }}
         run: pnpm build
 
+      - name: Collect build stats
+        run: |
+          # HTMLファイル数（ページ数）をカウント
+          PAGE_COUNT=$(find out -name "*.html" | wc -l | tr -d ' ')
+          echo "PAGE_COUNT=$PAGE_COUNT" >> $GITHUB_ENV
+
+          # outディレクトリの総サイズ
+          OUT_SIZE=$(du -sh out | cut -f1)
+          echo "OUT_SIZE=$OUT_SIZE" >> $GITHUB_ENV
+
+          # 作品ページ数
+          WORKS_COUNT=$(find out/works -name "*.html" 2>/dev/null | wc -l | tr -d ' ')
+          echo "WORKS_COUNT=$WORKS_COUNT" >> $GITHUB_ENV
+
+          # 声優ページ数
+          CV_COUNT=$(find out/cv -name "*.html" 2>/dev/null | wc -l | tr -d ' ')
+          echo "CV_COUNT=$CV_COUNT" >> $GITHUB_ENV
+
       - name: Fix file permissions
         run: |
           find out -type f -exec chmod 644 {} \;
@@ -77,3 +98,84 @@ jobs:
             -e "ssh -p ${SSH_PORT}" \
             ./out/ \
             ${SSH_USERNAME}@${SSH_HOST}:~/2d-adb.com/public_html/
+
+      - name: Calculate duration
+        run: |
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          MINUTES=$((DURATION / 60))
+          SECONDS=$((DURATION % 60))
+          echo "DURATION_TEXT=${MINUTES}分${SECONDS}秒" >> $GITHUB_ENV
+
+      - name: Notify Discord on success
+        if: success()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d @- << EOF
+          {
+            "embeds": [{
+              "title": "✅ 2D-ADB デプロイ完了",
+              "color": 5763719,
+              "fields": [
+                {
+                  "name": "📄 総ページ数",
+                  "value": "${PAGE_COUNT} ページ",
+                  "inline": true
+                },
+                {
+                  "name": "🎮 作品ページ",
+                  "value": "${WORKS_COUNT} ページ",
+                  "inline": true
+                },
+                {
+                  "name": "🎤 声優ページ",
+                  "value": "${CV_COUNT} ページ",
+                  "inline": true
+                },
+                {
+                  "name": "📦 ビルドサイズ",
+                  "value": "${OUT_SIZE}",
+                  "inline": true
+                },
+                {
+                  "name": "⏱️ 所要時間",
+                  "value": "${DURATION_TEXT}",
+                  "inline": true
+                },
+                {
+                  "name": "🔗 サイト",
+                  "value": "[2d-adb.com](https://2d-adb.com)",
+                  "inline": true
+                }
+              ],
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            }]
+          }
+          EOF
+
+      - name: Notify Discord on failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d @- << EOF
+          {
+            "embeds": [{
+              "title": "❌ 2D-ADB デプロイ失敗",
+              "color": 15548997,
+              "description": "ビルドまたはデプロイに失敗しました。",
+              "fields": [
+                {
+                  "name": "🔗 GitHub Actions",
+                  "value": "[ログを確認](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+                }
+              ],
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            }]
+          }
+          EOF
