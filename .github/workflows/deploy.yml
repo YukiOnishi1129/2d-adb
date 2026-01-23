@@ -46,14 +46,17 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
+        id: install
         run: pnpm install --no-frozen-lockfile
 
       - name: Build
+        id: build
         env:
           R2_PUBLIC_DOMAIN: ${{ secrets.R2_PUBLIC_DOMAIN }}
         run: pnpm build
 
       - name: Collect build stats
+        id: stats
         run: |
           # HTMLファイル数（ページ数）をカウント
           PAGE_COUNT=$(find out -name "*.html" | wc -l | tr -d ' ')
@@ -77,6 +80,7 @@ jobs:
           find out -type d -exec chmod 755 {} \;
 
       - name: Setup SSH
+        id: ssh
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -88,6 +92,7 @@ jobs:
           ssh-keyscan -p ${SSH_PORT} ${SSH_HOST} >> ~/.ssh/known_hosts
 
       - name: Deploy via rsync
+        id: deploy
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -100,6 +105,7 @@ jobs:
             ${SSH_USERNAME}@${SSH_HOST}:~/2d-adb.com/public_html/
 
       - name: Calculate duration
+        if: ${{ always() }}
         run: |
           END_TIME=$(date +%s)
           DURATION=$((END_TIME - START_TIME))
@@ -108,7 +114,7 @@ jobs:
           echo "DURATION_TEXT=${MINUTES}分${SECONDS}秒" >> $GITHUB_ENV
 
       - name: Notify Discord on success
-        if: success()
+        if: ${{ success() }}
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
@@ -157,10 +163,22 @@ jobs:
           EOF
 
       - name: Notify Discord on failure
-        if: failure()
+        if: ${{ failure() }}
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
+          # 失敗したステップを特定
+          FAILED_STEP="不明"
+          if [ "${{ steps.install.outcome }}" = "failure" ]; then
+            FAILED_STEP="依存関係インストール"
+          elif [ "${{ steps.build.outcome }}" = "failure" ]; then
+            FAILED_STEP="ビルド"
+          elif [ "${{ steps.ssh.outcome }}" = "failure" ]; then
+            FAILED_STEP="SSH接続"
+          elif [ "${{ steps.deploy.outcome }}" = "failure" ]; then
+            FAILED_STEP="デプロイ (rsync)"
+          fi
+
           curl -X POST "$DISCORD_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -d @- << EOF
@@ -168,8 +186,17 @@ jobs:
             "embeds": [{
               "title": "❌ 2D-ADB デプロイ失敗",
               "color": 15548997,
-              "description": "ビルドまたはデプロイに失敗しました。",
               "fields": [
+                {
+                  "name": "💥 失敗箇所",
+                  "value": "${FAILED_STEP}",
+                  "inline": true
+                },
+                {
+                  "name": "⏱️ 経過時間",
+                  "value": "${DURATION_TEXT:-不明}",
+                  "inline": true
+                },
                 {
                   "name": "🔗 GitHub Actions",
                   "value": "[ログを確認](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
