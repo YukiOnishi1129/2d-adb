@@ -1,5 +1,6 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -366,6 +367,15 @@ export default async function FeaturePage({
       <Header />
 
       <main className="mx-auto max-w-3xl px-4 py-4">
+        {/* パンくずリスト */}
+        <Breadcrumb
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "特集一覧", href: "/feature" },
+            { label: `${feature.name}特集` },
+          ]}
+        />
+
         {/* ページヘッダー */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">

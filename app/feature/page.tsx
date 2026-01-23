@@ -1,5 +1,6 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -153,6 +154,14 @@ export default async function FeatureListPage() {
       <Header />
 
       <main className="mx-auto max-w-3xl px-4 py-4">
+        {/* パンくずリスト */}
+        <Breadcrumb
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "特集一覧" },
+          ]}
+        />
+
         {/* ページヘッダー */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
