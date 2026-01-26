@@ -367,6 +367,104 @@ export default async function WorkDetailPage({ params }: Props) {
               </div>
             )}
 
+            {/* ファーストビュー大きなCTA */}
+            {(() => {
+              const dlPrice = dlsiteFinalPrice || work.priceDlsite;
+              const fzPrice = fanzaFinalPrice || work.priceFanza;
+              let ctaPlatform: "dlsite" | "fanza" = "dlsite";
+              let ctaUrl = work.dlsiteUrl;
+              let ctaPrice = dlPrice;
+              let ctaOriginalPrice = work.priceDlsite;
+              let ctaDiscountRate = work.discountRateDlsite;
+
+              if (dlPrice && fzPrice) {
+                if (fzPrice < dlPrice) {
+                  ctaPlatform = "fanza";
+                  ctaUrl = work.fanzaUrl;
+                  ctaPrice = fzPrice;
+                  ctaOriginalPrice = work.priceFanza;
+                  ctaDiscountRate = work.discountRateFanza;
+                }
+              } else if (!dlPrice && fzPrice) {
+                ctaPlatform = "fanza";
+                ctaUrl = work.fanzaUrl;
+                ctaPrice = fzPrice;
+                ctaOriginalPrice = work.priceFanza;
+                ctaDiscountRate = work.discountRateFanza;
+              }
+
+              const isOnSale = ctaDiscountRate && ctaDiscountRate > 0;
+              const rating = work.ratingDlsite || work.ratingFanza;
+              const reviewCount = work.reviewCountDlsite || work.reviewCountFanza;
+
+              if (!ctaUrl) return null;
+
+              return (
+                <Card className={`overflow-hidden ${isOnSale ? "border-orange-500/50 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30" : "border-emerald-500/50 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30"}`}>
+                  <CardContent className="p-4">
+                    {/* セール中の場合は緊急性を訴求 */}
+                    {isOnSale && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="sale" className="text-sm px-2 py-1">
+                          {ctaDiscountRate}%OFF
+                        </Badge>
+                        <span className="text-sm font-bold text-orange-600 dark:text-orange-400">
+                          今だけの特別価格！
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 評価・レビュー数 */}
+                    {rating && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-1">
+                          <span className="text-yellow-500">★</span>
+                          <span className="font-bold text-foreground">{rating.toFixed(1)}</span>
+                        </div>
+                        {reviewCount && reviewCount > 0 && (
+                          <span className="text-sm text-muted-foreground">
+                            ({reviewCount.toLocaleString()}件のレビュー)
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* 価格表示 */}
+                    <div className="flex items-baseline gap-2 mb-3">
+                      {isOnSale && ctaOriginalPrice && (
+                        <span className="text-base text-muted-foreground line-through">
+                          {formatPrice(ctaOriginalPrice)}
+                        </span>
+                      )}
+                      <span className={`text-2xl font-bold ${isOnSale ? "text-red-500" : "text-foreground"}`}>
+                        {ctaPrice ? formatPrice(ctaPrice) : "価格を確認"}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        ({ctaPlatform === "dlsite" ? "DLsite" : "FANZA"})
+                      </span>
+                    </div>
+
+                    {/* 大きなCTAボタン */}
+                    <AffiliateLink
+                      platform={ctaPlatform}
+                      url={ctaUrl || ""}
+                      productId={ctaPlatform === "dlsite" ? work.dlsiteProductId || undefined : undefined}
+                      workId={work.id}
+                      disabled={!ctaUrl}
+                      className={`w-full py-4 text-lg font-bold ${isOnSale ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
+                    >
+                      {getCtaLabel(work.category)}
+                    </AffiliateLink>
+
+                    {/* 補足テキスト */}
+                    <p className="mt-2 text-center text-xs text-muted-foreground">
+                      無料の体験版・サンプルで確認できます
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
             {/* タグ（タグページへのリンク） */}
             {work.aiTags.length > 0 && (
               <div className="flex flex-wrap gap-2">
@@ -709,6 +807,110 @@ export default async function WorkDetailPage({ params }: Props) {
               </table>
             </CardContent>
           </Card>
+
+          {/* 大きなCTAセクション */}
+          {(() => {
+            // 最安プラットフォームを判定
+            const dlPrice = dlsiteFinalPrice || work.priceDlsite;
+            const fzPrice = fanzaFinalPrice || work.priceFanza;
+            let ctaPlatform: "dlsite" | "fanza" = "dlsite";
+            let ctaUrl = work.dlsiteUrl;
+            let ctaPrice = dlPrice;
+            let ctaOriginalPrice = work.priceDlsite;
+            let ctaDiscountRate = work.discountRateDlsite;
+
+            if (dlPrice && fzPrice) {
+              if (fzPrice < dlPrice) {
+                ctaPlatform = "fanza";
+                ctaUrl = work.fanzaUrl;
+                ctaPrice = fzPrice;
+                ctaOriginalPrice = work.priceFanza;
+                ctaDiscountRate = work.discountRateFanza;
+              }
+            } else if (!dlPrice && fzPrice) {
+              ctaPlatform = "fanza";
+              ctaUrl = work.fanzaUrl;
+              ctaPrice = fzPrice;
+              ctaOriginalPrice = work.priceFanza;
+              ctaDiscountRate = work.discountRateFanza;
+            }
+
+            const isOnSale = ctaDiscountRate && ctaDiscountRate > 0;
+            const rating = work.ratingDlsite || work.ratingFanza;
+            const reviewCount = work.reviewCountDlsite || work.reviewCountFanza;
+
+            if (!ctaUrl) return null;
+
+            return (
+              <Card className={`overflow-hidden ${isOnSale ? "border-orange-500/50 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30" : "border-emerald-500/50 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30"}`}>
+                <CardContent className="p-4 sm:p-6">
+                  {/* セール中の場合は緊急性を訴求 */}
+                  {isOnSale && (
+                    <div className="flex items-center gap-2 mb-3">
+                      <Badge variant="sale" className="text-sm px-2 py-1">
+                        {ctaDiscountRate}%OFF
+                      </Badge>
+                      <span className="text-sm font-bold text-orange-600 dark:text-orange-400">
+                        今だけの特別価格！
+                      </span>
+                    </div>
+                  )}
+
+                  {/* 評価・レビュー数 */}
+                  {rating && (
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="flex items-center gap-1">
+                        <span className="text-yellow-500">★</span>
+                        <span className="font-bold text-foreground">{rating.toFixed(1)}</span>
+                      </div>
+                      {reviewCount && reviewCount > 0 && (
+                        <span className="text-sm text-muted-foreground">
+                          ({reviewCount.toLocaleString()}件のレビュー)
+                        </span>
+                      )}
+                      {rating >= 4.5 && (
+                        <Badge variant="outline" className="text-xs border-amber-500 text-amber-600 dark:text-amber-400">
+                          高評価
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 価格表示 */}
+                  <div className="flex items-baseline gap-2 mb-4">
+                    {isOnSale && ctaOriginalPrice && (
+                      <span className="text-lg text-muted-foreground line-through">
+                        {formatPrice(ctaOriginalPrice)}
+                      </span>
+                    )}
+                    <span className={`text-3xl font-bold ${isOnSale ? "text-red-500" : "text-foreground"}`}>
+                      {ctaPrice ? formatPrice(ctaPrice) : "価格を確認"}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      ({ctaPlatform === "dlsite" ? "DLsite" : "FANZA"})
+                    </span>
+                  </div>
+
+                  {/* 大きなCTAボタン */}
+                  <AffiliateLink
+                    platform={ctaPlatform}
+                    url={ctaUrl || ""}
+                    productId={ctaPlatform === "dlsite" ? work.dlsiteProductId || undefined : undefined}
+                    workId={work.id}
+                    disabled={!ctaUrl}
+                    className={`w-full py-5 text-xl font-bold ${isOnSale ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
+                  >
+                    {getCtaLabel(work.category)}
+                  </AffiliateLink>
+
+                  {/* 補足テキスト */}
+                  <p className="mt-3 text-center text-xs text-muted-foreground">
+                    無料の体験版・サンプルで確認できます
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {/* 発売日 */}
           {work.releaseDate && (

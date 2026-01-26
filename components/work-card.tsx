@@ -176,6 +176,19 @@ export function WorkCard({ work }: WorkCardProps) {
               {getCategoryLabel(work.category)}
             </Badge>
           )}
+          {/* 高評価・人気バッジ（左下） */}
+          <div className="absolute bottom-2 left-2 flex gap-1">
+            {(work.ratingDlsite && work.ratingDlsite >= 4.5) || (work.ratingFanza && work.ratingFanza >= 4.5) ? (
+              <div className="flex items-center gap-0.5 rounded bg-amber-500/90 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                ★ 高評価
+              </div>
+            ) : null}
+            {(work.reviewCountDlsite && work.reviewCountDlsite >= 50) || (work.reviewCountFanza && work.reviewCountFanza >= 50) ? (
+              <div className="flex items-center gap-0.5 rounded bg-pink-500/90 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                人気
+              </div>
+            ) : null}
+          </div>
           {/* スペックバッジ */}
           {specBadge && (
             <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] text-white">
