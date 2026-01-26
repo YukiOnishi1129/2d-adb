@@ -44,6 +44,42 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({ slug }));
 }
 
+// SEO用のキーワードマッピング
+const FEATURE_SEO_DATA: Record<string, { keywords: string[]; relatedTerms: string[] }> = {
+  nipple: {
+    keywords: ["乳首責め", "乳首", "ASMR", "おすすめ", "同人音声"],
+    relatedTerms: ["乳首舐め", "乳首コリコリ", "乳首攻め", "乳首開発"],
+  },
+  edging: {
+    keywords: ["射精管理", "寸止め", "ASMR", "おすすめ", "同人音声"],
+    relatedTerms: ["焦らし", "オーガズムコントロール", "射精禁止"],
+  },
+  onasapo: {
+    keywords: ["オナサポ", "オナニーサポート", "ASMR", "おすすめ", "同人音声"],
+    relatedTerms: ["オナニー指示", "手コキ音声", "射精カウントダウン"],
+  },
+  hypnosis: {
+    keywords: ["催眠音声", "催眠", "ASMR", "おすすめ", "同人音声"],
+    relatedTerms: ["洗脳", "暗示", "トランス", "催眠オナニー"],
+  },
+  earlick: {
+    keywords: ["耳舐め", "耳", "ASMR", "おすすめ", "同人音声"],
+    relatedTerms: ["耳かき", "耳元囁き", "バイノーラル"],
+  },
+  ntr: {
+    keywords: ["NTR", "寝取られ", "ASMR", "おすすめ", "同人音声"],
+    relatedTerms: ["寝取り", "浮気", "間男"],
+  },
+  succubus: {
+    keywords: ["サキュバス", "淫魔", "ASMR", "おすすめ", "同人音声"],
+    relatedTerms: ["夢魔", "搾精", "魅了"],
+  },
+  maid: {
+    keywords: ["メイド", "ご主人様", "ASMR", "おすすめ", "同人音声"],
+    relatedTerms: ["奉仕", "お世話", "従順"],
+  },
+};
+
 // メタデータを動的生成
 export async function generateMetadata({
   params,
@@ -56,13 +92,25 @@ export async function generateMetadata({
     return { title: "特集ページ | 2D-ADB" };
   }
 
-  const title = `${feature.name}特集 | 2D-ADB`;
-  const description = feature.description || `${feature.name}作品の厳選リスト`;
+  const seoData = FEATURE_SEO_DATA[slug];
+  const totalWorks = (feature.asmr_count || 0) + (feature.game_count || 0);
+  const year = new Date().getFullYear();
+
+  // SEO最適化されたタイトル
+  const title = `【${year}年】${feature.name}ASMRおすすめ${totalWorks}選｜同人音声・ゲーム厳選 | 2D-ADB`;
+
+  // SEO最適化されたdescription（120-160文字目安）
+  const description = `${feature.name}好きにおすすめのASMR・同人音声・同人ゲームを厳選${totalWorks}作品紹介。${
+    feature.headline || `${feature.name}ジャンルで評価の高い作品`
+  }をランキング形式で掲載。DLsite・FANZAのセール情報も随時更新中。`;
+
   const ogImage = feature.thumbnail_url || undefined;
+  const keywords = seoData?.keywords.join(", ") || `${feature.name}, ASMR, おすすめ, 同人音声`;
 
   return {
     title,
     description,
+    keywords,
     openGraph: {
       title,
       description,
@@ -362,8 +410,59 @@ export default async function FeaturePage({
     return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
   };
 
+  // 全作品を結合してランキング用に
+  const allWorks = [...asmrWorks, ...gameWorks];
+
+  // JSON-LD構造化データ（ItemList）
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `${feature.name}ASMRおすすめランキング`,
+    description: `${feature.name}好きにおすすめのASMR・同人音声・同人ゲーム厳選${allWorks.length}作品`,
+    numberOfItems: allWorks.length,
+    itemListElement: allWorks.slice(0, 10).map((work, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: work.title,
+      url: `https://2d-adb.com/works/${work.id}`,
+    })),
+  };
+
+  // JSON-LD構造化データ（FAQPage）
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `${feature.name}ASMRでおすすめの作品は？`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `${feature.name}ASMRでおすすめの作品は、${allWorks[0]?.title || "当サイトのランキング上位作品"}です。レビュー評価が高く、購入者からの評判も良い作品を厳選しています。`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `${feature.name}作品はどこで買える？`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `${feature.name}作品はDLsiteやFANZAで購入できます。当サイトではセール情報も随時更新しているので、お得に購入するタイミングもチェックできます。`,
+        },
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* 構造化データ */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <Header />
 
       <main className="mx-auto max-w-3xl px-4 py-4">
@@ -391,6 +490,33 @@ export default async function FeaturePage({
             {formatUpdatedAt(feature.updated_at)} 更新
           </div>
         </div>
+
+        {/* SEO用リード文セクション */}
+        <section className="mb-8 p-4 bg-card rounded-lg border border-border">
+          <h2 className="text-base font-bold text-foreground mb-3">
+            {feature.name}ASMRとは？
+          </h2>
+          <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
+            <p>
+              「{feature.name}」ジャンルのASMR・同人音声は、{feature.name}好きにはたまらない刺激的な体験を提供してくれます。
+              本ページでは、DLsite・FANZAで販売されている{feature.name}作品の中から、
+              <strong className="text-foreground">レビュー評価が高く、購入者から特に好評</strong>な作品を厳選してご紹介しています。
+            </p>
+            <p>
+              「ハズレを引きたくない」「どれを買えばいいか迷っている」という方は、
+              まずは上位ランキングの作品から試してみてください。
+              セール中の作品も随時更新しているので、お得に購入するチャンスもお見逃しなく。
+            </p>
+          </div>
+          {FEATURE_SEO_DATA[slug]?.relatedTerms && (
+            <div className="mt-3 pt-3 border-t border-border">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-bold">関連ワード: </span>
+                {FEATURE_SEO_DATA[slug].relatedTerms.join("、")}
+              </p>
+            </div>
+          )}
+        </section>
 
         {/* ASMR部門 */}
         <CategorySection
