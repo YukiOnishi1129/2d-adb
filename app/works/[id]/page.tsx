@@ -512,7 +512,7 @@ export default async function WorkDetailPage({ params }: Props) {
             <Card className="bg-secondary/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  おすすめポイント
+                  おすすめの理由
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -556,7 +556,7 @@ export default async function WorkDetailPage({ params }: Props) {
             <Card className="bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                  ✨ 刺さりポイント
+                  これが刺さる！
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -655,7 +655,7 @@ export default async function WorkDetailPage({ params }: Props) {
           {(work.aiAppealPoints || work.aiRecommendReason) && (
             <div className="p-4 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 border border-amber-200 dark:border-amber-800">
               <p className="text-sm font-bold text-amber-800 dark:text-amber-200 mb-1">
-                💡 買う前にチェック
+                購入者の声から分かったこと
               </p>
               <p className="text-sm text-amber-900 dark:text-amber-100">
                 {work.aiAppealPoints || work.aiRecommendReason}
