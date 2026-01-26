@@ -446,6 +446,58 @@ export async function getAllTagNames(): Promise<string[]> {
   return Array.from(tagNames);
 }
 
+// 関連タグを取得（同じ作品に付いているタグを集計）
+export async function getRelatedTags(
+  tagName: string,
+  limit: number = 10,
+): Promise<{ name: string; count: number }[]> {
+  const works = await getWorks();
+  const available = filterAvailable(works);
+
+  // このタグを持つ作品を取得
+  const worksWithTag = available.filter((w) => w.ai_tags?.includes(tagName));
+
+  // 共起するタグをカウント
+  const relatedCounts = new Map<string, number>();
+  for (const work of worksWithTag) {
+    if (work.ai_tags) {
+      for (const tag of work.ai_tags) {
+        if (tag !== tagName) {
+          relatedCounts.set(tag, (relatedCounts.get(tag) || 0) + 1);
+        }
+      }
+    }
+  }
+
+  // カウント順でソートして返す
+  return Array.from(relatedCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([name, count]) => ({ name, count }));
+}
+
+// 人気タグを取得（作品数順）
+export async function getPopularTags(
+  limit: number = 20,
+): Promise<{ name: string; count: number }[]> {
+  const works = await getWorks();
+  const available = filterAvailable(works);
+
+  const tagCounts = new Map<string, number>();
+  for (const work of available) {
+    if (work.ai_tags) {
+      for (const tag of work.ai_tags) {
+        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+      }
+    }
+  }
+
+  return Array.from(tagCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([name, count]) => ({ name, count }));
+}
+
 // 最新のセール特集データを取得
 export async function getLatestSaleFeature(): Promise<DbSaleFeature | null> {
   const features = await getSaleFeaturesData();

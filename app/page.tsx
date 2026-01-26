@@ -85,7 +85,7 @@ export default async function Home() {
   const dlsiteRanking = dbDlsiteRanking.map(dbWorkToWork);
   const fanzaRanking = dbFanzaRanking.map(dbWorkToWork);
   const actors = dbActors.slice(0, 12).map(dbActorToActor);
-  const tags = dbTags.slice(0, 12).map(dbTagToTag);
+  const tags = dbTags.slice(0, 20).map(dbTagToTag);
 
   // バナー用サムネイル・セール特集日
   const saleThumbnail = saleFeatureMainWork?.thumbnail_url || dbSaleWorks[0]?.thumbnail_url;
@@ -246,7 +246,7 @@ export default async function Home() {
               </Link>
             </div>
             <div className="flex flex-wrap gap-2">
-              {tags.slice(0, 12).map((tag) => (
+              {tags.slice(0, 20).map((tag) => (
                 <Link
                   key={tag.name}
                   href={`/tags/${encodeURIComponent(tag.name)}`}

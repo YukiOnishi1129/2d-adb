@@ -6,7 +6,7 @@ import { PageHeaderCard } from "@/components/page-header-card";
 import { WorkCard } from "@/components/work-card";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { getWorksByTag, getAllTagNames, getFeatureByName } from "@/lib/db";
+import { getWorksByTag, getAllTagNames, getFeatureByName, getRelatedTags } from "@/lib/db";
 import { Sparkles, ChevronRight } from "lucide-react";
 import { dbWorkToWork } from "@/lib/types";
 import Link from "next/link";
@@ -68,9 +68,10 @@ export const dynamicParams = false; // 静的エクスポートでは必須
 export default async function TagDetailPage({ params }: Props) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
-  const [dbWorks, relatedFeature] = await Promise.all([
+  const [dbWorks, relatedFeature, relatedTags] = await Promise.all([
     getWorksByTag(decodedName),
     getFeatureByName(decodedName),
+    getRelatedTags(decodedName, 10),
   ]);
 
   if (dbWorks.length === 0) {
@@ -112,33 +113,80 @@ export default async function TagDetailPage({ params }: Props) {
         {relatedFeature && (
           <div className="mb-8">
             <Link href={`/feature/${relatedFeature.slug}`}>
-              <Card className="overflow-hidden border-2 border-amber-500/50 hover:border-amber-500 transition-all bg-linear-to-r from-amber-500/10 to-amber-500/5">
-                <div className="flex items-center gap-4 p-4">
-                  {relatedFeature.thumbnail_url && (
-                    <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden">
-                      <img
-                        src={relatedFeature.thumbnail_url}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
+              <Card className="overflow-hidden border border-amber-500/30 hover:border-amber-500/50 transition-all">
+                {relatedFeature.thumbnail_url ? (
+                  <div className="relative aspect-[21/9] overflow-hidden">
+                    <img
+                      src={relatedFeature.thumbnail_url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                    {/* 上下グラデーション */}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-b from-black/50 via-transparent to-transparent" />
+                    {/* ラベル */}
+                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md text-sm font-bold text-white bg-amber-500" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>
+                      ✨ {relatedFeature.name}特集
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Sparkles className="h-4 w-4 text-amber-500" />
-                      <span className="text-sm font-bold text-foreground">
-                        {relatedFeature.name}特集
-                      </span>
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-base font-bold text-white mb-1" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>
+                            {relatedFeature.headline || `厳選${relatedFeature.name}作品をチェック`}
+                          </p>
+                          <p className="text-sm text-white/80" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.9)" }}>
+                            {relatedFeature.name}の人気作品を特集
+                          </p>
+                        </div>
+                        <ChevronRight className="h-6 w-6 text-white shrink-0" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.8))" }} />
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      {relatedFeature.headline ||
-                        `厳選${relatedFeature.name}作品をチェック`}
-                    </p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-amber-500 shrink-0" />
-                </div>
+                ) : (
+                  <div className="flex items-center gap-4 p-4 bg-linear-to-r from-amber-500/10 to-amber-500/5">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/20 shrink-0">
+                      <Sparkles className="h-7 w-7 text-amber-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-bold text-foreground">
+                          ✨ {relatedFeature.name}特集
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-1">
+                        {relatedFeature.headline || `厳選${relatedFeature.name}作品をチェック`}
+                      </p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-amber-500 shrink-0" />
+                  </div>
+                )}
               </Card>
             </Link>
+          </div>
+        )}
+
+        {/* 関連タグ */}
+        {relatedTags.length > 0 && (
+          <div className="mb-8">
+            <h2 className="mb-3 text-lg font-bold text-foreground">
+              関連タグ
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {relatedTags.map(({ name: tagName, count }) => (
+                <Link
+                  key={tagName}
+                  href={`/tags/${encodeURIComponent(tagName)}`}
+                >
+                  <Badge
+                    variant="tag"
+                    className="cursor-pointer text-sm hover:opacity-80"
+                  >
+                    {tagName}
+                    <span className="ml-1 opacity-70">({count})</span>
+                  </Badge>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 
