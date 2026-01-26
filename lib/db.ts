@@ -138,6 +138,7 @@ export async function getBargainWorks(
 }
 
 // ボイス・ASMRランキング作品を取得
+// DLsite優先: DLsiteランクがあればそれを使用、なければFANZAランクを使用
 export async function getVoiceRankingWorks(limit = 20): Promise<DbWork[]> {
   const works = await getWorks();
   const available = filterAvailable(works).filter(
@@ -146,11 +147,26 @@ export async function getVoiceRankingWorks(limit = 20): Promise<DbWork[]> {
       (w.dlsite_rank !== null || w.fanza_rank !== null),
   );
   const sorted = available.sort((a, b) => {
-    const rankA =
-      (a.dlsite_rank || 9999) + (a.fanza_rank || 9999);
-    const rankB =
-      (b.dlsite_rank || 9999) + (b.fanza_rank || 9999);
-    if (rankA !== rankB) return rankA - rankB;
+    // DLsite優先: DLsiteランクがある作品を先に、その中でランク順
+    const aHasDlsite = a.dlsite_rank !== null;
+    const bHasDlsite = b.dlsite_rank !== null;
+
+    // 両方DLsiteあり → DLsiteランク順
+    if (aHasDlsite && bHasDlsite) {
+      if (a.dlsite_rank !== b.dlsite_rank) {
+        return (a.dlsite_rank || 9999) - (b.dlsite_rank || 9999);
+      }
+    }
+    // 片方だけDLsiteあり → DLsiteある方を優先
+    if (aHasDlsite && !bHasDlsite) return -1;
+    if (!aHasDlsite && bHasDlsite) return 1;
+    // 両方FANZAのみ → FANZAランク順
+    if (!aHasDlsite && !bHasDlsite) {
+      if (a.fanza_rank !== b.fanza_rank) {
+        return (a.fanza_rank || 9999) - (b.fanza_rank || 9999);
+      }
+    }
+    // 同ランクなら新しい順
     const dateA = a.release_date || "";
     const dateB = b.release_date || "";
     return dateB.localeCompare(dateA);
@@ -159,6 +175,7 @@ export async function getVoiceRankingWorks(limit = 20): Promise<DbWork[]> {
 }
 
 // ゲームランキング作品を取得
+// DLsite優先: DLsiteランクがあればそれを使用、なければFANZAランクを使用
 export async function getGameRankingWorks(limit = 20): Promise<DbWork[]> {
   const works = await getWorks();
   const available = filterAvailable(works).filter(
@@ -167,11 +184,26 @@ export async function getGameRankingWorks(limit = 20): Promise<DbWork[]> {
       (w.dlsite_rank !== null || w.fanza_rank !== null),
   );
   const sorted = available.sort((a, b) => {
-    const rankA =
-      (a.dlsite_rank || 9999) + (a.fanza_rank || 9999);
-    const rankB =
-      (b.dlsite_rank || 9999) + (b.fanza_rank || 9999);
-    if (rankA !== rankB) return rankA - rankB;
+    // DLsite優先: DLsiteランクがある作品を先に、その中でランク順
+    const aHasDlsite = a.dlsite_rank !== null;
+    const bHasDlsite = b.dlsite_rank !== null;
+
+    // 両方DLsiteあり → DLsiteランク順
+    if (aHasDlsite && bHasDlsite) {
+      if (a.dlsite_rank !== b.dlsite_rank) {
+        return (a.dlsite_rank || 9999) - (b.dlsite_rank || 9999);
+      }
+    }
+    // 片方だけDLsiteあり → DLsiteある方を優先
+    if (aHasDlsite && !bHasDlsite) return -1;
+    if (!aHasDlsite && bHasDlsite) return 1;
+    // 両方FANZAのみ → FANZAランク順
+    if (!aHasDlsite && !bHasDlsite) {
+      if (a.fanza_rank !== b.fanza_rank) {
+        return (a.fanza_rank || 9999) - (b.fanza_rank || 9999);
+      }
+    }
+    // 同ランクなら新しい順
     const dateA = a.release_date || "";
     const dateB = b.release_date || "";
     return dateB.localeCompare(dateA);
