@@ -161,6 +161,10 @@ export const WorkCard = memo(function WorkCard({ work }: WorkCardProps) {
             }
             alt={work.title}
             loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src =
+                "https://placehold.co/600x314/f4f4f5/71717a?text=No+Image";
+            }}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
           {/* セールバッジ */}
