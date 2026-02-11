@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { Work } from "@/lib/types";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
@@ -141,7 +142,7 @@ function getSpecBadge(work: Work): { icon: typeof Clock; text: string } | null {
   return null;
 }
 
-export function WorkCard({ work }: WorkCardProps) {
+export const WorkCard = memo(function WorkCard({ work }: WorkCardProps) {
   const cheaper = getCheaperPlatform(work);
   const isOnSale = work.isOnSale;
   const unitPrice = getUnitPrice(work);
@@ -299,4 +300,4 @@ export function WorkCard({ work }: WorkCardProps) {
       </Card>
     </Link>
   );
-}
+});
