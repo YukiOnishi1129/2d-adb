@@ -1,3 +1,5 @@
+"use client";
+
 import { memo } from "react";
 import type { Work } from "@/lib/types";
 import Link from "next/link";
