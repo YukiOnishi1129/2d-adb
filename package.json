@@ -8,7 +8,7 @@
     "generate-sitemap": "node scripts/generate-sitemap.mjs",
     "generate-feed": "node scripts/generate-feed.mjs",
     "prebuild-data": "node scripts/prebuild-data.mjs",
-    "build": "node scripts/prebuild-data.mjs && node scripts/generate-search-index.mjs && node scripts/generate-sitemap.mjs && node scripts/generate-feed.mjs && node scripts/generate-paginated-data.mjs && next build",
+    "build": "node scripts/prebuild-data.mjs && node scripts/generate-search-index.mjs && node scripts/generate-sitemap.mjs && node scripts/generate-feed.mjs && next build",
     "serve": "npx serve@latest out -p 3000",
     "lint": "biome lint --log-level=warn .",
     "lint:fix": "biome lint --write --log-level=warn .",

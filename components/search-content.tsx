@@ -130,7 +130,7 @@ function SearchContentInner({ bannerData }: SearchContentProps) {
   ]);
 
   // 表示上限（メモリ・パフォーマンス対策）
-  const MAX_DISPLAY_RESULTS = 500;
+  const MAX_DISPLAY_RESULTS = 300;
   const displayResults = results.slice(0, MAX_DISPLAY_RESULTS);
   const hasMoreResults = results.length > MAX_DISPLAY_RESULTS;
 

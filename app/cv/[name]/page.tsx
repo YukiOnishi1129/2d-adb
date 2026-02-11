@@ -4,7 +4,6 @@ import { Footer } from "@/components/footer";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { PageHeaderCard } from "@/components/page-header-card";
 import { WorkGridWithLoadMore } from "@/components/work-grid-with-load-more";
-import { WorkGridWithFetch } from "@/components/work-grid-with-fetch";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getWorksByActor, getAllActorNames, getVoiceActorFeatureByName } from "@/lib/db";
@@ -173,17 +172,19 @@ export default async function CVDetailPage({ params }: Props) {
         <h2 className="mb-4 text-xl font-bold text-foreground">出演作品</h2>
 
         {works.length > 0 ? (
-          totalCount > MAX_SSG_WORKS ? (
-            // 100件超えの場合はfetchで追加データを取得
-            <WorkGridWithFetch
-              initialWorks={works}
-              totalCount={totalCount}
-              fetchBasePath={`/data/cv/${encodeURIComponent(decodedName)}`}
-            />
-          ) : (
-            // 100件以下はSSGデータのみ
+          <>
             <WorkGridWithLoadMore works={works} />
-          )
+            {totalCount > MAX_SSG_WORKS && (
+              <div className="mt-6 text-center">
+                <a
+                  href={`/search/?q=${encodeURIComponent(decodedName)}`}
+                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                >
+                  検索ページで全{totalCount}件を見る →
+                </a>
+              </div>
+            )}
+          </>
         ) : (
           <p className="text-muted-foreground">
             この声優の出演作品はまだ登録されていません。
