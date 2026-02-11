@@ -39,13 +39,16 @@ export function WorkGridWithLoadMore({
   const effectiveLoadCount = isMobile ? 20 : loadMoreCount;
   const effectiveInitialCount = isMobile ? 20 : initialCount;
 
-  const [displayCount, setDisplayCount] = useState(effectiveInitialCount);
+  const [displayCount, setDisplayCount] = useState(20);
   const [isPending, startTransition] = useTransition();
+  // 前回の表示件数設定を追跡
+  const [prevEffectiveInitialCount, setPrevEffectiveInitialCount] = useState(effectiveInitialCount);
 
-  // モバイル/PC切り替え時に表示数をリセット
-  useEffect(() => {
+  // モバイル/PC切り替え時に表示数をリセット（同期的に処理）
+  if (effectiveInitialCount !== prevEffectiveInitialCount) {
+    setPrevEffectiveInitialCount(effectiveInitialCount);
     setDisplayCount(effectiveInitialCount);
-  }, [effectiveInitialCount]);
+  }
 
   // 初回マウント時のパフォーマンス計測
   useEffect(() => {

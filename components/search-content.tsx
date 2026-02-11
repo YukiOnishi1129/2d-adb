@@ -1,13 +1,29 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { SearchResultCard } from "@/components/search-result-card";
 import { FeaturedBanners } from "@/components/featured-banners";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSearch } from "@/hooks/use-search";
-import { Search, ChevronDown, Check, X, JapaneseYen } from "lucide-react";
+import { Search, ChevronDown, Check, X, JapaneseYen, Loader2 } from "lucide-react";
+
+// モバイル判定用
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 640 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  return isMobile;
+}
 import type {
   SortType,
   CategoryFilter,
@@ -28,6 +44,8 @@ interface SearchContentProps {
 
 function SearchContentInner({ bannerData }: SearchContentProps) {
   const searchParams = useSearchParams();
+  const isMobile = useIsMobile();
+  const [isPending, startTransition] = useTransition();
   const {
     results,
     isLoading,
@@ -48,13 +66,18 @@ function SearchContentInner({ bannerData }: SearchContentProps) {
 
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
+  // モバイルでは20件ずつ、PCでは50件ずつ
+  const loadMoreCount = isMobile ? 20 : 50;
+  const initialCount = isMobile ? 20 : 50;
   const [displayCount, setDisplayCount] = useState(50);
+  // 前回の検索結果件数を追跡
+  const [prevResultCount, setPrevResultCount] = useState(resultCount);
 
-  // 検索結果が変わったらリセット
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on result change
-  useEffect(() => {
-    setDisplayCount(50);
-  }, [resultCount]);
+  // 検索結果が変わったらリセット（同期的に処理）
+  if (resultCount !== prevResultCount) {
+    setPrevResultCount(resultCount);
+    setDisplayCount(initialCount);
+  }
 
   // URLパラメータから初期値を取得
   useEffect(() => {
@@ -105,6 +128,11 @@ function SearchContentInner({ bannerData }: SearchContentProps) {
     setCategory,
     setMaxPrice,
   ]);
+
+  // 表示上限（メモリ・パフォーマンス対策）
+  const MAX_DISPLAY_RESULTS = 500;
+  const displayResults = results.slice(0, MAX_DISPLAY_RESULTS);
+  const hasMoreResults = results.length > MAX_DISPLAY_RESULTS;
 
   const sortOptions: { value: SortType; label: string }[] = [
     { value: "new", label: "新着順" },
@@ -272,24 +300,40 @@ function SearchContentInner({ bannerData }: SearchContentProps) {
       {/* 検索結果 */}
       {isLoading ? (
         <p className="text-muted-foreground">読み込み中...</p>
-      ) : results.length > 0 ? (
+      ) : displayResults.length > 0 ? (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {results.slice(0, displayCount).map((item) => (
+            {displayResults.slice(0, displayCount).map((item) => (
               <SearchResultCard key={item.id} item={item} />
             ))}
           </div>
-          {displayCount < results.length && (
+          {displayCount < displayResults.length && (
             <div className="mt-6 flex justify-center">
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => setDisplayCount((prev) => Math.min(prev + 50, results.length))}
+                disabled={isPending}
+                onClick={() => {
+                  startTransition(() => {
+                    setDisplayCount((prev) => Math.min(prev + loadMoreCount, displayResults.length));
+                  });
+                }}
                 className="gap-2"
               >
-                <ChevronDown className="h-4 w-4" />
-                もっと見る（残り{results.length - displayCount}件）
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+                {isPending ? "読み込み中..." : `もっと見る（残り${displayResults.length - displayCount}件）`}
               </Button>
+            </div>
+          )}
+          {hasMoreResults && displayCount >= displayResults.length && (
+            <div className="mt-4 rounded-lg bg-amber-500/10 p-4 text-center">
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                表示上限（{MAX_DISPLAY_RESULTS}件）に達しました。検索条件を絞り込んでください。
+              </p>
             </div>
           )}
         </>

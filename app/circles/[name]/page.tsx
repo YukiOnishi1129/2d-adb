@@ -4,11 +4,15 @@ import { Footer } from "@/components/footer";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { PageHeaderCard } from "@/components/page-header-card";
 import { WorkGridWithLoadMore } from "@/components/work-grid-with-load-more";
+import { WorkGridWithFetch } from "@/components/work-grid-with-fetch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCircleWithWorks, getAllCircleNames } from "@/lib/db";
 import { dbCircleToCircle, dbWorkToWork } from "@/lib/types";
 import { notFound } from "next/navigation";
+
+// SSGで埋め込むデータの上限（これ以上はJSONが重くなりフリーズの原因になる）
+const MAX_SSG_WORKS = 100;
 
 interface Props {
   params: Promise<{ name: string }>;
@@ -53,6 +57,7 @@ export async function generateStaticParams() {
 }
 
 export const dynamic = "force-static";
+export const dynamicParams = false; // 静的エクスポートでは必須
 
 export default async function CircleDetailPage({ params }: Props) {
   const { name } = await params;
@@ -65,7 +70,11 @@ export default async function CircleDetailPage({ params }: Props) {
   }
 
   const circle = dbCircleToCircle(dbCircle);
-  const works = dbWorks.map(dbWorkToWork);
+
+  // SSGで渡すデータ量を制限（100件まで）
+  const totalCount = dbWorks.length;
+  const limitedDbWorks = dbWorks.slice(0, MAX_SSG_WORKS);
+  const works = limitedDbWorks.map(dbWorkToWork);
 
   return (
     <div className="min-h-screen bg-background">
@@ -120,7 +129,17 @@ export default async function CircleDetailPage({ params }: Props) {
         <h2 className="mb-4 text-xl font-bold text-foreground">作品一覧</h2>
 
         {works.length > 0 ? (
-          <WorkGridWithLoadMore works={works} initialCount={50} />
+          totalCount > MAX_SSG_WORKS ? (
+            // 100件超えの場合はfetchで追加データを取得
+            <WorkGridWithFetch
+              initialWorks={works}
+              totalCount={totalCount}
+              fetchBasePath={`/data/circles/${encodeURIComponent(decodedName)}`}
+            />
+          ) : (
+            // 100件以下はSSGデータのみ
+            <WorkGridWithLoadMore works={works} />
+          )
         ) : (
           <p className="text-muted-foreground">
             このサークルの作品はまだ登録されていません。

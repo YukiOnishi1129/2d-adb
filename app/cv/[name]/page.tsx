@@ -4,6 +4,7 @@ import { Footer } from "@/components/footer";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { PageHeaderCard } from "@/components/page-header-card";
 import { WorkGridWithLoadMore } from "@/components/work-grid-with-load-more";
+import { WorkGridWithFetch } from "@/components/work-grid-with-fetch";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { getWorksByActor, getAllActorNames, getVoiceActorFeatureByName } from "@/lib/db";
@@ -11,6 +12,9 @@ import { dbWorkToWork } from "@/lib/types";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Mic, ChevronRight, Star, Sparkles } from "lucide-react";
+
+// SSGで埋め込むデータの上限（これ以上はJSONが重くなりフリーズの原因になる）
+const MAX_SSG_WORKS = 100;
 
 interface Props {
   params: Promise<{ name: string }>;
@@ -77,7 +81,10 @@ export default async function CVDetailPage({ params }: Props) {
     notFound();
   }
 
-  const works = dbWorks.map(dbWorkToWork);
+  // SSGで渡すデータ量を制限（100件まで）
+  const totalCount = dbWorks.length;
+  const limitedDbWorks = dbWorks.slice(0, MAX_SSG_WORKS);
+  const works = limitedDbWorks.map(dbWorkToWork);
 
   return (
     <div className="min-h-screen bg-background">
@@ -166,7 +173,17 @@ export default async function CVDetailPage({ params }: Props) {
         <h2 className="mb-4 text-xl font-bold text-foreground">出演作品</h2>
 
         {works.length > 0 ? (
-          <WorkGridWithLoadMore works={works} initialCount={50} />
+          totalCount > MAX_SSG_WORKS ? (
+            // 100件超えの場合はfetchで追加データを取得
+            <WorkGridWithFetch
+              initialWorks={works}
+              totalCount={totalCount}
+              fetchBasePath={`/data/cv/${encodeURIComponent(decodedName)}`}
+            />
+          ) : (
+            // 100件以下はSSGデータのみ
+            <WorkGridWithLoadMore works={works} />
+          )
         ) : (
           <p className="text-muted-foreground">
             この声優の出演作品はまだ登録されていません。
