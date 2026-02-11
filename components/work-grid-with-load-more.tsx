@@ -47,14 +47,38 @@ export function WorkGridWithLoadMore({
     setDisplayCount(effectiveInitialCount);
   }, [effectiveInitialCount]);
 
+  // 初回マウント時のパフォーマンス計測
+  useEffect(() => {
+    console.log(`[WorkGrid] マウント完了: 総データ${works.length}件, 初期表示${effectiveInitialCount}件`);
+    if (typeof window !== 'undefined' && window.performance) {
+      const entries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+      if (entries.length > 0) {
+        const nav = entries[0];
+        console.log(`[Performance] DOM読込: ${nav.domContentLoadedEventEnd.toFixed(0)}ms, 完全読込: ${nav.loadEventEnd.toFixed(0)}ms`);
+      }
+    }
+  }, [works.length, effectiveInitialCount]);
+
   const displayedWorks = works.slice(0, displayCount);
   const hasMore = displayCount < works.length;
   const remainingCount = works.length - displayCount;
 
   const handleLoadMore = () => {
+    // パフォーマンス計測開始
+    const startTime = performance.now();
+    console.log(`[LoadMore] 開始: 現在${displayCount}件 → +${effectiveLoadCount}件追加`);
+
     // useTransitionで非ブロッキングレンダリング
     startTransition(() => {
-      setDisplayCount((prev) => Math.min(prev + effectiveLoadCount, works.length));
+      setDisplayCount((prev) => {
+        const newCount = Math.min(prev + effectiveLoadCount, works.length);
+        // requestIdleCallbackでレンダリング完了後に計測
+        requestIdleCallback(() => {
+          const endTime = performance.now();
+          console.log(`[LoadMore] 完了: ${newCount}件表示, 所要時間: ${(endTime - startTime).toFixed(0)}ms`);
+        });
+        return newCount;
+      });
     });
   };
 
