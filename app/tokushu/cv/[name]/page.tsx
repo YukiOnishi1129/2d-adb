@@ -159,6 +159,7 @@ function RecommendationCard({
             <img
               src={work.thumbnailUrl || "https://placehold.co/400x225/f4f4f5/71717a?text=No"}
               alt={work.title}
+              loading="lazy"
               className="h-full w-full object-cover transition-transform hover:scale-105"
             />
             {work.killerWords.durationMinutes && (
@@ -254,6 +255,7 @@ function SaleWorkCard({ work }: { work: Work }) {
           <img
             src={work.thumbnailUrl || "https://placehold.co/200x150/f4f4f5/71717a?text=No"}
             alt={work.title}
+            loading="lazy"
             className="h-full w-full object-cover"
           />
           {work.maxDiscountRate && (
@@ -277,7 +279,7 @@ function SaleWorkCard({ work }: { work: Work }) {
   );
 }
 
-function WorkCard({ work }: { work: Work }) {
+function TokushuWorkCard({ work }: { work: Work }) {
   const price = work.lowestPrice || work.priceDlsite || work.priceFanza || 0;
   return (
     <Link href={`/works/${work.id}`} className="block">
@@ -286,6 +288,7 @@ function WorkCard({ work }: { work: Work }) {
           <img
             src={work.thumbnailUrl || "https://placehold.co/200x150/f4f4f5/71717a?text=No"}
             alt={work.title}
+            loading="lazy"
             className="h-full w-full object-cover"
           />
           {work.isOnSale && work.maxDiscountRate && (
@@ -492,7 +495,7 @@ export default async function CVTokushuPage({ params }: Props) {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {newWorks.map((work) => (
-                <WorkCard key={work.id} work={work} />
+                <TokushuWorkCard key={work.id} work={work} />
               ))}
             </div>
           </section>
@@ -540,6 +543,7 @@ export default async function CVTokushuPage({ params }: Props) {
                       <img
                         src={actor.representative_thumbnail_url || "https://placehold.co/200x112/f4f4f5/71717a?text=CV"}
                         alt={actor.name}
+                        loading="lazy"
                         className="h-full w-full object-cover"
                       />
                     </div>

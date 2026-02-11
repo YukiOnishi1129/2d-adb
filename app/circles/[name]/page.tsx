@@ -3,7 +3,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { PageHeaderCard } from "@/components/page-header-card";
-import { WorkCard } from "@/components/work-card";
+import { WorkGridWithLoadMore } from "@/components/work-grid-with-load-more";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getCircleWithWorks, getAllCircleNames } from "@/lib/db";
@@ -120,11 +120,7 @@ export default async function CircleDetailPage({ params }: Props) {
         <h2 className="mb-4 text-xl font-bold text-foreground">作品一覧</h2>
 
         {works.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-            {works.map((work) => (
-              <WorkCard key={work.id} work={work} />
-            ))}
-          </div>
+          <WorkGridWithLoadMore works={works} initialCount={50} />
         ) : (
           <p className="text-muted-foreground">
             このサークルの作品はまだ登録されていません。

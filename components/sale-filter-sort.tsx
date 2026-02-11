@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { WorkCard } from "@/components/work-card";
+import { Button } from "@/components/ui/button";
 import { ChevronDown, Check, X, JapaneseYen } from "lucide-react";
 import type { Work } from "@/lib/types";
 
@@ -68,6 +69,13 @@ export function SaleFilterSort({ works }: SaleFilterSortProps) {
   const [maxPrice, setMaxPrice] = useState<PriceFilter>("all");
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
+  const [displayCount, setDisplayCount] = useState(50);
+
+  // フィルター変更時にリセット
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on filter change
+  useEffect(() => {
+    setDisplayCount(50);
+  }, [sort, genre, maxPrice]);
 
   const currentSortLabel =
     sortOptions.find((opt) => opt.value === sort)?.label || "割引率順";
@@ -189,11 +197,26 @@ export function SaleFilterSort({ works }: SaleFilterSortProps) {
 
       {/* 作品一覧 */}
       {filteredAndSortedWorks.length > 0 ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-          {filteredAndSortedWorks.map((work) => (
-            <WorkCard key={work.id} work={work} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+            {filteredAndSortedWorks.slice(0, displayCount).map((work) => (
+              <WorkCard key={work.id} work={work} />
+            ))}
+          </div>
+          {displayCount < filteredAndSortedWorks.length && (
+            <div className="mt-6 flex justify-center">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setDisplayCount((prev) => Math.min(prev + 50, filteredAndSortedWorks.length))}
+                className="gap-2"
+              >
+                <ChevronDown className="h-4 w-4" />
+                もっと見る（残り{filteredAndSortedWorks.length - displayCount}件）
+              </Button>
+            </div>
+          )}
+        </>
       ) : (
         <p className="py-8 text-center text-muted-foreground">
           該当する作品がありません

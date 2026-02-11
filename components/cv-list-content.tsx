@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Crown, Trophy, Medal, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Crown, Trophy, Medal, User, ChevronDown } from "lucide-react";
 import type { Actor } from "@/lib/types";
 
 interface CVListContentProps {
@@ -14,6 +15,13 @@ interface CVListContentProps {
 
 export function CVListContent({ actors }: CVListContentProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [displayCount, setDisplayCount] = useState(50);
+
+  // 検索時にリセット
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on search change
+  useEffect(() => {
+    setDisplayCount(50);
+  }, [searchQuery]);
 
   // 人気声優（上位10名）とその他を分離
   const { popularActors, otherActors } = useMemo(() => {
@@ -160,7 +168,7 @@ export function CVListContent({ actors }: CVListContentProps) {
             </span>
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
-            {filteredOther.map((actor) => (
+            {filteredOther.slice(0, displayCount).map((actor) => (
               <Link
                 key={actor.name}
                 href={`/cv/${encodeURIComponent(actor.name)}`}
@@ -178,6 +186,19 @@ export function CVListContent({ actors }: CVListContentProps) {
               </Link>
             ))}
           </div>
+          {displayCount < filteredOther.length && (
+            <div className="mt-4 flex justify-center">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setDisplayCount((prev) => Math.min(prev + 50, filteredOther.length))}
+                className="gap-2"
+              >
+                <ChevronDown className="h-4 w-4" />
+                もっと見る（残り{filteredOther.length - displayCount}名）
+              </Button>
+            </div>
+          )}
         </section>
       )}
 

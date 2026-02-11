@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { SearchResultCard } from "@/components/search-result-card";
 import { FeaturedBanners } from "@/components/featured-banners";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useSearch } from "@/hooks/use-search";
 import { Search, ChevronDown, Check, X, JapaneseYen } from "lucide-react";
 import type {
@@ -47,6 +48,13 @@ function SearchContentInner({ bannerData }: SearchContentProps) {
 
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
+  const [displayCount, setDisplayCount] = useState(50);
+
+  // 検索結果が変わったらリセット
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on result change
+  useEffect(() => {
+    setDisplayCount(50);
+  }, [resultCount]);
 
   // URLパラメータから初期値を取得
   useEffect(() => {
@@ -265,11 +273,26 @@ function SearchContentInner({ bannerData }: SearchContentProps) {
       {isLoading ? (
         <p className="text-muted-foreground">読み込み中...</p>
       ) : results.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          {results.map((item) => (
-            <SearchResultCard key={item.id} item={item} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+            {results.slice(0, displayCount).map((item) => (
+              <SearchResultCard key={item.id} item={item} />
+            ))}
+          </div>
+          {displayCount < results.length && (
+            <div className="mt-6 flex justify-center">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setDisplayCount((prev) => Math.min(prev + 50, results.length))}
+                className="gap-2"
+              >
+                <ChevronDown className="h-4 w-4" />
+                もっと見る（残り{results.length - displayCount}件）
+              </Button>
+            </div>
+          )}
+        </>
       ) : (
         <div className="py-12 text-center">
           <p className="text-muted-foreground">

@@ -159,6 +159,7 @@ export function WorkCard({ work }: WorkCardProps) {
               "https://placehold.co/600x314/f4f4f5/71717a?text=No+Image"
             }
             alt={work.title}
+            loading="lazy"
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
           {/* セールバッジ */}
