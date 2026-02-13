@@ -36,17 +36,42 @@ function formatPrice(price: number): string {
   return `¥${price.toLocaleString()}`;
 }
 
-function getCtaLabel(category: string | null | undefined): string {
-  if (!category) return "詳細を見る";
-  const cat = category.toLowerCase();
-  if (cat === "asmr" || cat === "音声作品") {
-    return "🎧 試聴してみる";
+function getCategoryLabel(genre: string | null | undefined, category: string | null | undefined): string | null {
+  // genreを優先して判定
+  if (genre) {
+    if (genre.includes("音声")) {
+      return "ASMR";
+    }
+    if (genre.includes("ゲーム")) {
+      return "ゲーム";
+    }
   }
-  if (cat === "game" || cat === "ゲーム") {
-    return "🎮 体験版で遊ぶ";
+  // genreがない場合はcategoryにフォールバック
+  return category || null;
+}
+
+function getCtaLabel(genre: string | null | undefined, category: string | null | undefined): string {
+  // genreを優先して判定
+  if (genre) {
+    if (genre.includes("音声")) {
+      return "🎧 試聴してみる";
+    }
+    if (genre.includes("ゲーム")) {
+      return "🎮 体験版で遊ぶ";
+    }
   }
-  if (cat === "動画" || cat === "video") {
-    return "🎬 サンプルを見る";
+  // genreがない場合はcategoryにフォールバック
+  if (category) {
+    const cat = category.toLowerCase();
+    if (cat === "asmr" || cat === "音声作品") {
+      return "🎧 試聴してみる";
+    }
+    if (cat === "game" || cat === "ゲーム") {
+      return "🎮 体験版で遊ぶ";
+    }
+    if (cat === "動画" || cat === "video") {
+      return "🎬 サンプルを見る";
+    }
   }
   return "詳細を見る";
 }
@@ -266,12 +291,12 @@ export default async function WorkDetailPage({ params }: Props) {
               {work.maxDiscountRate}%OFF
             </Badge>
           )}
-          {work.category && (
+          {getCategoryLabel(work.genre, work.category) && (
             <Badge
               variant="secondary"
               className="absolute top-4 right-4 text-sm"
             >
-              {work.category}
+              {getCategoryLabel(work.genre, work.category)}
             </Badge>
           )}
           {/* 高評価・レビュー数バッジ（実データ） */}
@@ -295,8 +320,8 @@ export default async function WorkDetailPage({ params }: Props) {
           <div className="space-y-4">
             {/* カテゴリ + 評価 */}
             <div className="flex items-center gap-3 flex-wrap">
-              {work.category && (
-                <Badge variant="outline">{work.category}</Badge>
+              {getCategoryLabel(work.genre, work.category) && (
+                <Badge variant="outline">{getCategoryLabel(work.genre, work.category)}</Badge>
               )}
               {(work.ratingDlsite || work.ratingFanza) &&
                 (() => {
@@ -453,7 +478,7 @@ export default async function WorkDetailPage({ params }: Props) {
                       disabled={!ctaUrl}
                       className={`w-full py-4 text-lg font-bold ${isOnSale ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
                     >
-                      {getCtaLabel(work.category)}
+                      {getCtaLabel(work.genre, work.category)}
                     </AffiliateLink>
 
                     {/* 補足テキスト */}
@@ -739,7 +764,7 @@ export default async function WorkDetailPage({ params }: Props) {
                           disabled={!work.dlsiteUrl}
                           className={`font-bold ${work.discountRateDlsite && work.discountRateDlsite > 0 ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
                         >
-                          {getCtaLabel(work.category)}
+                          {getCtaLabel(work.genre, work.category)}
                         </AffiliateLink>
                       </td>
                     </tr>
@@ -798,7 +823,7 @@ export default async function WorkDetailPage({ params }: Props) {
                           disabled={!work.fanzaUrl}
                           className={`font-bold ${work.discountRateFanza && work.discountRateFanza > 0 ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
                         >
-                          {getCtaLabel(work.category)}
+                          {getCtaLabel(work.genre, work.category)}
                         </AffiliateLink>
                       </td>
                     </tr>
@@ -900,7 +925,7 @@ export default async function WorkDetailPage({ params }: Props) {
                     disabled={!ctaUrl}
                     className={`w-full py-5 text-xl font-bold ${isOnSale ? "bg-orange-500 hover:bg-orange-600" : "bg-emerald-600 hover:bg-emerald-700"}`}
                   >
-                    {getCtaLabel(work.category)}
+                    {getCtaLabel(work.genre, work.category)}
                   </AffiliateLink>
 
                   {/* 補足テキスト */}
@@ -1100,6 +1125,7 @@ export default async function WorkDetailPage({ params }: Props) {
         discountRateFanza={work.discountRateFanza}
         saleEndDateDlsite={work.saleEndDateDlsite}
         saleEndDateFanza={work.saleEndDateFanza}
+        genre={work.genre}
         category={work.category}
       />
     </div>

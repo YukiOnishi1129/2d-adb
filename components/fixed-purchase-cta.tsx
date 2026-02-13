@@ -35,20 +35,32 @@ interface FixedPurchaseCtaProps {
   discountRateFanza: number | null;
   saleEndDateDlsite: string | null;
   saleEndDateFanza: string | null;
+  genre: string | null | undefined;
   category: string | null | undefined;
 }
 
-function getCtaLabel(category: string | null | undefined): string {
-  if (!category) return "詳細を見る";
-  const cat = category.toLowerCase();
-  if (cat === "asmr" || cat === "音声作品") {
-    return "🎧 試聴してみる";
+function getCtaLabel(genre: string | null | undefined, category: string | null | undefined): string {
+  // genreを優先して判定
+  if (genre) {
+    if (genre.includes("音声")) {
+      return "🎧 試聴してみる";
+    }
+    if (genre.includes("ゲーム")) {
+      return "🎮 体験版で遊ぶ";
+    }
   }
-  if (cat === "game" || cat === "ゲーム") {
-    return "🎮 体験版で遊ぶ";
-  }
-  if (cat === "動画" || cat === "video") {
-    return "🎬 サンプルを見る";
+  // genreがない場合はcategoryにフォールバック
+  if (category) {
+    const cat = category.toLowerCase();
+    if (cat === "asmr" || cat === "音声作品") {
+      return "🎧 試聴してみる";
+    }
+    if (cat === "game" || cat === "ゲーム") {
+      return "🎮 体験版で遊ぶ";
+    }
+    if (cat === "動画" || cat === "video") {
+      return "🎬 サンプルを見る";
+    }
   }
   return "詳細を見る";
 }
@@ -76,6 +88,7 @@ export function FixedPurchaseCta({
   discountRateFanza,
   saleEndDateDlsite,
   saleEndDateFanza,
+  genre,
   category,
 }: FixedPurchaseCtaProps) {
   // 最安値のプラットフォームを判定（セール価格適用済みの値で比較）
@@ -188,7 +201,7 @@ export function FixedPurchaseCta({
               }
             }}
           >
-            {getCtaLabel(category)}
+            {getCtaLabel(genre, category)}
           </a>
         </Button>
       </div>
