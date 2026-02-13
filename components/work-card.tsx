@@ -81,21 +81,18 @@ function getCheaperPlatform(work: Work): {
 }
 
 function getUnitPrice(work: Work): string | null {
-  const { killerWords } = work;
+  const { killerWords, genre, category } = work;
   const cheaper = getCheaperPlatform(work);
   if (!cheaper) return null;
 
-  // 音声作品: 分単価
-  if (
-    (work.category === "ASMR" || work.category === "音声作品") &&
-    killerWords.durationMinutes
-  ) {
+  // 音声作品: 分単価（genreを優先）
+  if (isASMRByGenre(genre, category) && killerWords.durationMinutes) {
     const perMinute = Math.round(cheaper.price / killerWords.durationMinutes);
     return `${perMinute}円/分`;
   }
 
-  // ゲーム: CG単価
-  if (work.category === "ゲーム" && killerWords.cgCount) {
+  // ゲーム: CG単価（genreを優先）
+  if (isGameByGenre(genre, category) && killerWords.cgCount) {
     const perCg = Math.round(cheaper.price / killerWords.cgCount);
     return `${perCg}円/枚`;
   }
@@ -103,7 +100,16 @@ function getUnitPrice(work: Work): string | null {
   return null;
 }
 
-function getCategoryLabel(category: string | null | undefined): string {
+// genreを優先してカテゴリラベルを判定
+function getCategoryLabel(genre: string | null | undefined, category: string | null | undefined): string {
+  // genreを優先（より正確）
+  if (genre) {
+    if (genre.includes("音声")) return "ASMR";
+    if (genre.includes("ゲーム")) return "ゲーム";
+    if (genre.includes("動画")) return "動画";
+    if (genre.includes("CG")) return "CG集";
+  }
+  // genreがない場合はcategoryにフォールバック
   if (!category) return "";
   switch (category) {
     case "ASMR":
@@ -120,24 +126,41 @@ function getCategoryLabel(category: string | null | undefined): string {
   }
 }
 
-function getSpecBadge(work: Work): { icon: typeof Clock; text: string } | null {
-  const { killerWords, category } = work;
+// genreからASMRかどうか判定
+function isASMRByGenre(genre: string | null | undefined, category: string | null | undefined): boolean {
+  // genreがある場合はgenreを優先
+  if (genre) {
+    return genre.includes("音声");
+  }
+  // genreがない場合のみcategoryにフォールバック
+  return category === "ASMR" || category === "音声作品";
+}
 
-  // 音声・ASMR: 収録時間
-  if (
-    (category === "ASMR" || category === "音声作品") &&
-    killerWords.durationMinutes
-  ) {
+// genreからゲームかどうか判定
+function isGameByGenre(genre: string | null | undefined, category: string | null | undefined): boolean {
+  // genreがある場合はgenreを優先
+  if (genre) {
+    return genre.includes("ゲーム");
+  }
+  // genreがない場合のみcategoryにフォールバック
+  return category === "ゲーム";
+}
+
+function getSpecBadge(work: Work): { icon: typeof Clock; text: string } | null {
+  const { killerWords, genre, category } = work;
+
+  // 音声・ASMR: 収録時間（genreを優先）
+  if (isASMRByGenre(genre, category) && killerWords.durationMinutes) {
     return { icon: Clock, text: `${killerWords.durationMinutes}分` };
   }
 
-  // ゲーム: CG枚数
-  if (category === "ゲーム" && killerWords.cgCount) {
+  // ゲーム: CG枚数（genreを優先）
+  if (isGameByGenre(genre, category) && killerWords.cgCount) {
     return { icon: Image, text: `${killerWords.cgCount}枚` };
   }
 
-  // ゲーム: プレイ時間
-  if (category === "ゲーム" && killerWords.playTimeHours) {
+  // ゲーム: プレイ時間（genreを優先）
+  if (isGameByGenre(genre, category) && killerWords.playTimeHours) {
     return { icon: Gamepad2, text: `${killerWords.playTimeHours}h` };
   }
 
@@ -181,7 +204,7 @@ export const WorkCard = memo(function WorkCard({ work }: WorkCardProps) {
               variant="secondary"
               className="absolute top-2 right-2 text-[10px]"
             >
-              {getCategoryLabel(work.category)}
+              {getCategoryLabel(work.genre, work.category)}
             </Badge>
           )}
           {/* 高評価・人気バッジ（左下） */}

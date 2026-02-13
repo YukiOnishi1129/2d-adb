@@ -22,11 +22,31 @@ interface SpecItem {
   value: string;
 }
 
-export function SpecTable({ work }: SpecTableProps) {
-  const { killerWords, category } = work;
+// genreからASMRかどうか判定
+function isASMRByGenre(genre: string | null | undefined, category: string | null | undefined): boolean {
+  // genreがある場合はgenreを優先
+  if (genre) {
+    return genre.includes("音声");
+  }
+  // genreがない場合のみcategoryにフォールバック
+  return category === "ASMR" || category === "音声作品";
+}
 
-  // 音声・ASMR作品のスペック
-  if (category === "ASMR" || category === "音声作品") {
+// genreからゲームかどうか判定
+function isGameByGenre(genre: string | null | undefined, category: string | null | undefined): boolean {
+  // genreがある場合はgenreを優先
+  if (genre) {
+    return genre.includes("ゲーム");
+  }
+  // genreがない場合のみcategoryにフォールバック
+  return category === "ゲーム";
+}
+
+export function SpecTable({ work }: SpecTableProps) {
+  const { killerWords, genre, category } = work;
+
+  // 音声・ASMR作品のスペック（genreを優先）
+  if (isASMRByGenre(genre, category)) {
     const specs: SpecItem[] = [
       killerWords.cvNames && {
         icon: Mic,
@@ -81,8 +101,8 @@ export function SpecTable({ work }: SpecTableProps) {
     );
   }
 
-  // ゲーム作品のスペック
-  if (category === "ゲーム") {
+  // ゲーム作品のスペック（genreを優先）
+  if (isGameByGenre(genre, category)) {
     const specs: SpecItem[] = [
       killerWords.cgCount && {
         icon: Image,

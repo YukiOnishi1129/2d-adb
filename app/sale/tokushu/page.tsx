@@ -117,9 +117,9 @@ function MainFocusCard({
   );
   const sampleUrl = getSampleUrl(work);
   const isASMR =
+    work.genre?.includes("音声") ||
     work.category === "ASMR" ||
-    work.category === "音声作品" ||
-    work.genre === "音声";
+    work.category === "音声作品";
 
   return (
     <Card className="overflow-hidden border-2 border-sale/50 bg-gradient-to-b from-sale/5 to-transparent">

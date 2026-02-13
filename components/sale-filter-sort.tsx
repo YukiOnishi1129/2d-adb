@@ -44,6 +44,26 @@ const priceFilters: { value: PriceFilter; label: string }[] = [
   { value: "2000", label: "〜2,000円" },
 ];
 
+// genreからASMRかどうか判定
+function isASMRByGenre(genre: string | null | undefined, category: string | null | undefined): boolean {
+  // genreがある場合はgenreを優先
+  if (genre) {
+    return genre.includes("音声");
+  }
+  // genreがない場合のみcategoryにフォールバック
+  return category === "ASMR" || category === "音声作品";
+}
+
+// genreからゲームかどうか判定
+function isGameByGenre(genre: string | null | undefined, category: string | null | undefined): boolean {
+  // genreがある場合はgenreを優先
+  if (genre) {
+    return genre.includes("ゲーム");
+  }
+  // genreがない場合のみcategoryにフォールバック
+  return category === "ゲーム";
+}
+
 function getCheapestPrice(work: Work): number {
   const dlsitePrice =
     work.priceDlsite && work.discountRateDlsite
@@ -85,13 +105,11 @@ export function SaleFilterSort({ works }: SaleFilterSortProps) {
   const filteredAndSortedWorks = useMemo(() => {
     let result = works;
 
-    // ジャンルフィルター
+    // ジャンルフィルター（genreを優先）
     if (genre === "voice") {
-      result = result.filter(
-        (w) => w.category === "ASMR" || w.category === "音声作品",
-      );
+      result = result.filter((w) => isASMRByGenre(w.genre, w.category));
     } else if (genre === "game") {
-      result = result.filter((w) => w.category === "ゲーム");
+      result = result.filter((w) => isGameByGenre(w.genre, w.category));
     }
 
     // 価格フィルター

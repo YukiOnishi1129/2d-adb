@@ -92,10 +92,17 @@ async function fetchParquet(filename) {
  * Work → SearchItem 変換
  */
 function convertToSearchItem(work) {
-  const isAsmr =
-    work.genre?.includes("ボイス") ||
-    work.genre?.includes("ASMR") ||
-    work.category === "ASMR";
+  // genreがある場合はgenreを優先
+  let isAsmr;
+  if (work.genre) {
+    isAsmr =
+      work.genre.includes("音声") ||
+      work.genre.includes("ボイス") ||
+      work.genre.includes("ASMR");
+  } else {
+    // genreがない場合のみcategoryにフォールバック
+    isAsmr = work.category === "ASMR" || work.category === "音声作品";
+  }
   const cat = isAsmr ? "asmr" : "game";
 
   const currentPrice =
