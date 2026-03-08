@@ -48,34 +48,35 @@ function getCheaperPlatform(work: Work): {
       : work.priceFanza;
 
   if (dlsitePrice && fanzaPrice) {
-    if (dlsitePrice <= fanzaPrice) {
+    // FANZA優先（同額ならFANZA、FANZAが安い場合もFANZA）
+    if (fanzaPrice <= dlsitePrice) {
       return {
-        platform: "DLsite",
-        price: dlsitePrice,
-        originalPrice: dlsiteOriginal!,
-        discountRate: work.discountRateDlsite,
+        platform: "FANZA",
+        price: fanzaPrice,
+        originalPrice: fanzaOriginal!,
+        discountRate: work.discountRateFanza,
       };
     }
     return {
-      platform: "FANZA",
-      price: fanzaPrice,
-      originalPrice: fanzaOriginal!,
-      discountRate: work.discountRateFanza,
-    };
-  }
-  if (dlsitePrice && dlsiteOriginal)
-    return {
       platform: "DLsite",
       price: dlsitePrice,
-      originalPrice: dlsiteOriginal,
+      originalPrice: dlsiteOriginal!,
       discountRate: work.discountRateDlsite,
     };
+  }
   if (fanzaPrice && fanzaOriginal)
     return {
       platform: "FANZA",
       price: fanzaPrice,
       originalPrice: fanzaOriginal,
       discountRate: work.discountRateFanza,
+    };
+  if (dlsitePrice && dlsiteOriginal)
+    return {
+      platform: "DLsite",
+      price: dlsitePrice,
+      originalPrice: dlsiteOriginal,
+      discountRate: work.discountRateDlsite,
     };
   return null;
 }

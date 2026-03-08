@@ -396,26 +396,27 @@ export default async function WorkDetailPage({ params }: Props) {
             {(() => {
               const dlPrice = dlsiteFinalPrice || work.priceDlsite;
               const fzPrice = fanzaFinalPrice || work.priceFanza;
-              let ctaPlatform: "dlsite" | "fanza" = "dlsite";
-              let ctaUrl = work.dlsiteUrl;
-              let ctaPrice = dlPrice;
-              let ctaOriginalPrice = work.priceDlsite;
-              let ctaDiscountRate = work.discountRateDlsite;
+              // FANZA優先（同額ならFANZA）
+              let ctaPlatform: "dlsite" | "fanza" = "fanza";
+              let ctaUrl = work.fanzaUrl;
+              let ctaPrice = fzPrice;
+              let ctaOriginalPrice = work.priceFanza;
+              let ctaDiscountRate = work.discountRateFanza;
 
               if (dlPrice && fzPrice) {
-                if (fzPrice < dlPrice) {
-                  ctaPlatform = "fanza";
-                  ctaUrl = work.fanzaUrl;
-                  ctaPrice = fzPrice;
-                  ctaOriginalPrice = work.priceFanza;
-                  ctaDiscountRate = work.discountRateFanza;
+                if (dlPrice < fzPrice) {
+                  ctaPlatform = "dlsite";
+                  ctaUrl = work.dlsiteUrl;
+                  ctaPrice = dlPrice;
+                  ctaOriginalPrice = work.priceDlsite;
+                  ctaDiscountRate = work.discountRateDlsite;
                 }
-              } else if (!dlPrice && fzPrice) {
-                ctaPlatform = "fanza";
-                ctaUrl = work.fanzaUrl;
-                ctaPrice = fzPrice;
-                ctaOriginalPrice = work.priceFanza;
-                ctaDiscountRate = work.discountRateFanza;
+              } else if (!fzPrice && dlPrice) {
+                ctaPlatform = "dlsite";
+                ctaUrl = work.dlsiteUrl;
+                ctaPrice = dlPrice;
+                ctaOriginalPrice = work.priceDlsite;
+                ctaDiscountRate = work.discountRateDlsite;
               }
 
               const isOnSale = ctaDiscountRate && ctaDiscountRate > 0;
@@ -835,29 +836,29 @@ export default async function WorkDetailPage({ params }: Props) {
 
           {/* 大きなCTAセクション */}
           {(() => {
-            // 最安プラットフォームを判定
+            // FANZA優先（同額ならFANZA）
             const dlPrice = dlsiteFinalPrice || work.priceDlsite;
             const fzPrice = fanzaFinalPrice || work.priceFanza;
-            let ctaPlatform: "dlsite" | "fanza" = "dlsite";
-            let ctaUrl = work.dlsiteUrl;
-            let ctaPrice = dlPrice;
-            let ctaOriginalPrice = work.priceDlsite;
-            let ctaDiscountRate = work.discountRateDlsite;
+            let ctaPlatform: "dlsite" | "fanza" = "fanza";
+            let ctaUrl = work.fanzaUrl;
+            let ctaPrice = fzPrice;
+            let ctaOriginalPrice = work.priceFanza;
+            let ctaDiscountRate = work.discountRateFanza;
 
             if (dlPrice && fzPrice) {
-              if (fzPrice < dlPrice) {
-                ctaPlatform = "fanza";
-                ctaUrl = work.fanzaUrl;
-                ctaPrice = fzPrice;
-                ctaOriginalPrice = work.priceFanza;
-                ctaDiscountRate = work.discountRateFanza;
+              if (dlPrice < fzPrice) {
+                ctaPlatform = "dlsite";
+                ctaUrl = work.dlsiteUrl;
+                ctaPrice = dlPrice;
+                ctaOriginalPrice = work.priceDlsite;
+                ctaDiscountRate = work.discountRateDlsite;
               }
-            } else if (!dlPrice && fzPrice) {
-              ctaPlatform = "fanza";
-              ctaUrl = work.fanzaUrl;
-              ctaPrice = fzPrice;
-              ctaOriginalPrice = work.priceFanza;
-              ctaDiscountRate = work.discountRateFanza;
+            } else if (!fzPrice && dlPrice) {
+              ctaPlatform = "dlsite";
+              ctaUrl = work.dlsiteUrl;
+              ctaPrice = dlPrice;
+              ctaOriginalPrice = work.priceDlsite;
+              ctaDiscountRate = work.discountRateDlsite;
             }
 
             const isOnSale = ctaDiscountRate && ctaDiscountRate > 0;
