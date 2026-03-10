@@ -87,15 +87,13 @@ function getCTAText(discountRate: number | null): string {
   return `${discountRate}%OFFで手に入れる`;
 }
 
-// 試聴/体験版URLを取得
+// FANZA優先（報酬率が高いため）
 function getSampleUrl(work: Work): string | null {
-  // DLsiteの試聴ページ
-  if (work.dlsiteProductId) {
-    return `https://www.dlsite.com/maniax/work/=/product_id/${work.dlsiteProductId}.html`;
-  }
-  // FANZAのサンプルページ
   if (work.fanzaUrl) {
     return work.fanzaUrl;
+  }
+  if (work.dlsiteProductId) {
+    return `https://www.dlsite.com/maniax/work/=/product_id/${work.dlsiteProductId}.html`;
   }
   return null;
 }
@@ -261,7 +259,7 @@ function MainFocusCard({
           {/* 試聴/体験版ボタン */}
           {sampleUrl && (
             <AffiliateLink
-              platform={work.dlsiteProductId ? "dlsite" : "fanza"}
+              platform={work.fanzaUrl ? "fanza" : "dlsite"}
               url={sampleUrl}
               workId={work.id}
               size="default"
@@ -426,7 +424,7 @@ function SubCard({
         <div className="flex gap-2">
           {sampleUrl && (
             <AffiliateLink
-              platform={work.dlsiteProductId ? "dlsite" : "fanza"}
+              platform={work.fanzaUrl ? "fanza" : "dlsite"}
               url={sampleUrl}
               workId={work.id}
               size="sm"

@@ -38,13 +38,13 @@ function formatPrice(price: number): string {
   return `¥${price.toLocaleString()}`;
 }
 
-// 試聴/体験版URLを取得
+// FANZA優先（報酬率が高いため）
 function getSampleUrl(work: Work): string | null {
-  if (work.dlsiteProductId) {
-    return `https://www.dlsite.com/maniax/work/=/product_id/${work.dlsiteProductId}.html`;
-  }
   if (work.fanzaUrl) {
     return work.fanzaUrl;
+  }
+  if (work.dlsiteProductId) {
+    return `https://www.dlsite.com/maniax/work/=/product_id/${work.dlsiteProductId}.html`;
   }
   return null;
 }
@@ -194,7 +194,7 @@ function RecommendationCard({
         <div className="flex gap-2">
           {sampleUrl && (
             <AffiliateLink
-              platform={work.dlsiteProductId ? "dlsite" : "fanza"}
+              platform={work.fanzaUrl ? "fanza" : "dlsite"}
               url={sampleUrl}
               workId={work.id}
               size="sm"
