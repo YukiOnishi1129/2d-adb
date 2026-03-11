@@ -25,6 +25,17 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
+  openGraph: {
+    type: "website",
+    locale: "ja_JP",
+    siteName: "2D-ADB",
+    images: [
+      { url: "https://2d-adb.com/ogp/recommendation_ogp.png", width: 1200, height: 630 },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({

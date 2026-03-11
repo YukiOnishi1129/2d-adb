@@ -25,6 +25,15 @@ export function Footer() {
             RSS
           </a>
         </div>
+        {/* 姉妹サイト */}
+        <div className="mb-4">
+          <p className="mb-2 text-xs text-foreground/40">姉妹サイト</p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <a href="https://dj-adb.com" className="hover:text-foreground" target="_blank" rel="noopener noreferrer">
+              DJ-ADB（同人コミック）
+            </a>
+          </div>
+        </div>
         {/* FANZA API クレジット表記 */}
         <p className="mt-4 text-xs text-foreground/40">
           Powered by{" "}
