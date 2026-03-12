@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { SisterSiteBanner } from "@/components/sister-site-banner";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { ProductJsonLd, BreadcrumbJsonLd } from "@/components/json-ld";
 import { SaleTimer } from "@/components/sale-timer";
@@ -1110,6 +1111,9 @@ export default async function WorkDetailPage({ params }: Props) {
             </section>
           )}
         </div>
+
+        {/* 姉妹サイトバナー */}
+        <SisterSiteBanner />
       </main>
 
       <Footer />
