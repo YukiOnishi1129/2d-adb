@@ -1,4 +1,12 @@
+"use client";
+
 export function SisterSiteBanner() {
+  const handleClick = () => {
+    window.gtag?.("event", "sister_site_click_to_dj_adb", {
+      source_page: window.location.pathname,
+    });
+  };
+
   return (
     <section className="mt-10 mb-4">
       <a
@@ -6,6 +14,7 @@ export function SisterSiteBanner() {
         target="_blank"
         rel="noopener noreferrer"
         className="block overflow-hidden rounded-lg border border-border hover:border-primary/50 transition-all"
+        onClick={handleClick}
       >
         <div className="relative aspect-[1200/630] w-full">
           <img
