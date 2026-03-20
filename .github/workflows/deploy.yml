@@ -91,50 +91,18 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${SSH_PORT} ${SSH_HOST} >> ~/.ssh/known_hosts
 
-      - name: Compress build output
-        run: tar czf out.tar.gz -C out .
-
-      - name: Deploy via tar.gz
+      - name: Deploy via rsync
         id: deploy
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
-          SSH_CMD="ssh -p ${SSH_PORT} -o ServerAliveInterval=60 -o ServerAliveCountMax=10"
-          REMOTE="${SSH_USERNAME}@${SSH_HOST}"
-          DEPLOY_DIR="~/2d-adb.com/public_html"
-
-          # 1. tar.gzをサーバーに転送
-          scp -P ${SSH_PORT} -o ServerAliveInterval=60 -o ServerAliveCountMax=10 \
-            out.tar.gz ${REMOTE}:~/out.tar.gz
-
-          # 2. サーバー側で展開・切り替え（api/ディレクトリは保持）
-          ${SSH_CMD} ${REMOTE} bash -s << 'DEPLOY_SCRIPT'
-            set -e
-            DEPLOY_DIR=~/2d-adb.com/public_html
-            DEPLOY_NEW=~/2d-adb.com/public_html_new
-            DEPLOY_OLD=~/2d-adb.com/public_html_old
-
-            # 新しいディレクトリに展開
-            rm -rf ${DEPLOY_NEW}
-            mkdir -p ${DEPLOY_NEW}
-            tar xzf ~/out.tar.gz -C ${DEPLOY_NEW}
-
-            # api/ディレクトリを新しい方にコピー
-            if [ -d "${DEPLOY_DIR}/api" ]; then
-              cp -a ${DEPLOY_DIR}/api ${DEPLOY_NEW}/api
-            fi
-
-            # 切り替え
-            rm -rf ${DEPLOY_OLD}
-            mv ${DEPLOY_DIR} ${DEPLOY_OLD}
-            mv ${DEPLOY_NEW} ${DEPLOY_DIR}
-
-            # クリーンアップ
-            rm -f ~/out.tar.gz
-            rm -rf ${DEPLOY_OLD}
-          DEPLOY_SCRIPT
+          rsync -avz --delete \
+            --exclude 'api/' \
+            -e "ssh -p ${SSH_PORT} -o ServerAliveInterval=60 -o ServerAliveCountMax=10" \
+            ./out/ \
+            ${SSH_USERNAME}@${SSH_HOST}:~/2d-adb.com/public_html/
 
       - name: Calculate duration
         if: ${{ always() }}
