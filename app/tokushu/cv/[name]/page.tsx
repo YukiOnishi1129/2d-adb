@@ -67,8 +67,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "声優特集 | 2D-ADB" };
   }
 
-  const title = `${feature.name}特集 - おすすめASMR厳選${feature.recommended_works?.length || 0}作品 | 2D-ADB`;
-  const description = feature.description || `${feature.name}の人気ASMR作品を厳選。迷ったらここから選べばハズレなし。`;
+  const title = `${feature.name}特集 - おすすめASMRレビュー厳選${feature.recommended_works?.length || 0}作品 | 2D-ADB`;
+  const description = feature.description || `${feature.name}の人気ASMR作品をレビュー・厳選。迷ったらここから選べばハズレなし。`;
   const ogImage = feature.representative_thumbnail_url || undefined;
   const keywords = [
     feature.name,

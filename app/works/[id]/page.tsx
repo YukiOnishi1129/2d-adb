@@ -3,7 +3,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SisterSiteBanner } from "@/components/sister-site-banner";
 import { Breadcrumb } from "@/components/breadcrumb";
-import { ProductJsonLd, BreadcrumbJsonLd } from "@/components/json-ld";
+import { ProductJsonLd, ReviewJsonLd, BreadcrumbJsonLd } from "@/components/json-ld";
 import { SaleTimer } from "@/components/sale-timer";
 import { SaleBannerCountdown } from "@/components/sale-banner-countdown";
 import { SpecTable } from "@/components/spec-table";
@@ -103,23 +103,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const work = dbWorkToWork(dbWork);
 
-  // タイトル: セール中なら割引率を含める
+  // タイトル: セール中なら割引率を含める + レビュー・感想キーワード
   const salePrefix =
     work.isOnSale && work.maxDiscountRate
       ? `【${work.maxDiscountRate}%OFF】`
       : "";
-  const title = `${salePrefix}${work.title} | 2D-ADB`;
+  const title = `${salePrefix}${work.title} レビュー・感想 | 2D-ADB`;
 
-  // description: 評価情報 + 刺さりポイント優先、なければおすすめ理由や要約
-  const ratingText = work.ratingDlsite ? `評価${work.ratingDlsite.toFixed(1)}` : "";
+  // description: 評価 + セール情報 + AI生成の魅力ポイント
+  const ratingText = work.ratingDlsite
+    ? `★${work.ratingDlsite.toFixed(1)}`
+    : work.ratingFanza
+      ? `★${work.ratingFanza.toFixed(1)}`
+      : "";
+  const saleText = work.isOnSale && work.maxDiscountRate
+    ? `${work.maxDiscountRate}%OFFセール中。`
+    : "";
   const baseDescription =
     work.aiAppealPoints ||
     work.aiRecommendReason ||
     work.aiSummary ||
     "";
-  const description = baseDescription
-    ? `${ratingText ? `${ratingText}の` : ""}${baseDescription}`
-    : `${work.title}の価格比較・セール情報・レビューをチェック`;
+  const description = [
+    ratingText,
+    saleText,
+    baseDescription,
+  ].filter(Boolean).join(" ").trim()
+    || `${work.title}のレビュー・感想・セール情報をチェック。DLsite・FANZAの価格を比較`;
 
   // OG画像: サムネイル優先
   const ogImage = work.thumbnailUrl || work.sampleImages[0] || null;
@@ -256,6 +266,7 @@ export default async function WorkDetailPage({ params }: Props) {
     <div className="min-h-screen bg-background pb-32 md:pb-0">
       {/* 構造化データ */}
       <ProductJsonLd work={work} />
+      <ReviewJsonLd work={work} />
       <BreadcrumbJsonLd items={breadcrumbItems} />
 
       <Header />

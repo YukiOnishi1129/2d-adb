@@ -29,8 +29,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const genreText = dbCircle.main_genre ? `（${dbCircle.main_genre}）` : "";
-  const title = `${decodedName}${genreText}の作品一覧（${dbWorks.length}作品） | 2D-ADB`;
-  const description = `サークル「${decodedName}」のASMR・同人音声・同人ゲーム${dbWorks.length}作品を掲載。最新作品やセール情報をチェック！`;
+  const title = `${decodedName}${genreText}のおすすめ作品・レビュー（${dbWorks.length}作品） | 2D-ADB`;
+  const description = `サークル「${decodedName}」のASMR・同人音声・同人ゲーム${dbWorks.length}作品のレビュー・感想まとめ。最新作品やセール情報をチェック！`;
 
   return {
     title,

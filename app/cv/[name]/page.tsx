@@ -30,8 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${decodedName}の出演作品一覧（${dbWorks.length}作品） | 2D-ADB`;
-  const description = `${decodedName}が出演するASMR・同人音声・同人ゲーム${dbWorks.length}作品を掲載。人気作品やセール情報もチェック！`;
+  const title = `${decodedName}の出演作品おすすめ・レビュー（${dbWorks.length}作品） | 2D-ADB`;
+  const description = `${decodedName}出演のASMR・同人音声・同人ゲーム${dbWorks.length}作品のレビュー・感想まとめ。人気作品やセール情報もチェック！`;
 
   return {
     title,
