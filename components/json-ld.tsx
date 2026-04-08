@@ -70,8 +70,6 @@ export function ProductJsonLd({ work }: ProductJsonLdProps) {
 }
 
 export function ReviewJsonLd({ work }: ProductJsonLdProps) {
-  const rating = work.ratingDlsite || work.ratingFanza;
-  const reviewCount = work.reviewCountDlsite || work.reviewCountFanza;
   const reviewBody = work.aiReview || work.aiAppealPoints || work.aiSummary;
 
   if (!reviewBody) return null;
@@ -80,7 +78,7 @@ export function ReviewJsonLd({ work }: ProductJsonLdProps) {
     "@context": "https://schema.org",
     "@type": "Review",
     itemReviewed: {
-      "@type": "CreativeWork",
+      "@type": "Product",
       name: work.title,
       ...(work.thumbnailUrl && { image: work.thumbnailUrl }),
     },
@@ -89,23 +87,6 @@ export function ReviewJsonLd({ work }: ProductJsonLdProps) {
       name: "2D-ADB",
     },
     reviewBody: reviewBody,
-    ...(rating && {
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: rating.toFixed(1),
-        bestRating: "5",
-        worstRating: "1",
-      },
-    }),
-    ...(rating && reviewCount && {
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: rating.toFixed(1),
-        bestRating: "5",
-        worstRating: "1",
-        reviewCount: reviewCount,
-      },
-    }),
   };
 
   return (
