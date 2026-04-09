@@ -46,7 +46,7 @@ export function ProductJsonLd({ work }: ProductJsonLdProps) {
       priceCurrency: "JPY",
       lowPrice: lowestPrice || 0,
       highPrice: Math.max(work.priceDlsite || 0, work.priceFanza || 0),
-      offerCount: [work.priceDlsite, work.priceFanza].filter(Boolean).length,
+      offerCount: [work.priceDlsite, work.priceFanza].filter(Boolean).length || 1,
       availability: "https://schema.org/InStock",
     },
     ...(rating &&
