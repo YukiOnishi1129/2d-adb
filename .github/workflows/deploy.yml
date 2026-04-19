@@ -3,12 +3,6 @@ name: Deploy to Shin Rental Server
 on:
   schedule:
     - cron: '0 6 * * *'  # UTC 6:00 = JST 15:00 (Daily Batch 12:30完了後)
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'docs/**'
-      - '**/*.md'
   workflow_dispatch:
 
 jobs:

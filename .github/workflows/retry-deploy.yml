@@ -1,0 +1,45 @@
+name: Retry Deploy on Failure
+
+# メインデプロイ（15:00 JST）が失敗していたら、深夜に再実行する
+# JST 03:00 = UTC 18:00
+
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  check-and-retry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check last deploy status
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CONCLUSION=$(gh run list \
+            --workflow="Deploy to Shin Rental Server" \
+            --branch=main \
+            --limit=1 \
+            --json conclusion \
+            --jq '.[0].conclusion' \
+            --repo ${{ github.repository }})
+          echo "Last run conclusion: $CONCLUSION"
+          echo "conclusion=$CONCLUSION" >> $GITHUB_OUTPUT
+
+      - name: Retry deploy if failed
+        if: steps.check.outputs.conclusion == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "前回失敗だったのでデプロイを再実行"
+          gh workflow run "Deploy to Shin Rental Server" --ref main --repo ${{ github.repository }}
+
+      - name: Skip if success
+        if: steps.check.outputs.conclusion != 'failure'
+        run: |
+          echo "前回成功 (conclusion=${{ steps.check.outputs.conclusion }})、スキップ"
