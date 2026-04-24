@@ -26,6 +26,7 @@ export const metadata: Metadata = {
   title: "人気声優特集一覧 - おすすめASMR厳選 | 2D-ADB",
   description:
     "人気声優のASMR作品特集一覧。各声優のおすすめ作品を厳選して紹介。迷ったらここから選べばハズレなし。",
+  alternates: { canonical: "/tokushu/cv/" },
   openGraph: {
     title: "人気声優特集一覧 - おすすめASMR厳選 | 2D-ADB",
     description:

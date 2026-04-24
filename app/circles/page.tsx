@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { CircleListContent } from "@/components/circle-list-content";
 import { getCircles } from "@/lib/db";
 import { dbCircleToCircle } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "サークル一覧 | 2D-ADB",
+  description: "ASMR・同人音声・同人ゲーム作品を手掛けるサークル一覧。",
+  alternates: { canonical: "/circles/" },
+};
 
 export const dynamic = "force-static";
 

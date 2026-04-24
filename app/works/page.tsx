@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { WorkCard } from "@/components/work-card";
@@ -16,6 +17,12 @@ import {
 } from "@/lib/db";
 import { dbWorkToWork, dbActorToActor } from "@/lib/types";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "作品一覧 | 2D-ADB",
+  description: "ASMR・同人音声・同人ゲームの作品一覧。人気順・新着順で作品を探せます。",
+  alternates: { canonical: "/works/" },
+};
 
 export const dynamic = "force-static";
 

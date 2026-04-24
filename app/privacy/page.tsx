@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Breadcrumb } from "@/components/breadcrumb";
+
+export const metadata: Metadata = {
+  title: "プライバシーポリシー | 2D-ADB",
+  alternates: { canonical: "/privacy/" },
+};
 
 export default function PrivacyPolicyPage() {
   return (

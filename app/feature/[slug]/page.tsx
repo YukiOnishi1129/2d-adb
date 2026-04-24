@@ -112,6 +112,7 @@ export async function generateMetadata({
     title,
     description,
     keywords,
+    alternates: { canonical: `/feature/${slug}/` },
     openGraph: {
       title,
       description,

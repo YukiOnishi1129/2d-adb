@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { FeaturedBanners } from "@/components/featured-banners";
@@ -16,6 +17,12 @@ import {
 import { dbActorToActor } from "@/lib/types";
 import { Mic, ChevronRight } from "lucide-react";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "声優一覧 | 2D-ADB",
+  description: "ASMR・同人音声・同人ゲームの人気声優一覧。声優から作品を探せます。",
+  alternates: { canonical: "/cv/" },
+};
 
 export const dynamic = "force-static";
 

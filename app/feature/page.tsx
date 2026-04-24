@@ -28,6 +28,7 @@ export const metadata: Metadata = {
   title: "性癖・ジャンル特集一覧 | 2D-ADB",
   description:
     "乳首責め、オナサポ、寝取られ、催眠など、性癖・ジャンル別の厳選作品特集一覧。ASMRとゲームのおすすめ作品をまとめて紹介。",
+  alternates: { canonical: "/feature/" },
   openGraph: {
     title: "性癖・ジャンル特集一覧 | 2D-ADB",
     description:

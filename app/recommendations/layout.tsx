@@ -4,6 +4,7 @@ import Script from "next/script";
 export const metadata: Metadata = {
   title: "今日のおすすめ作品 | 2D-ADB",
   description: "迷ったらここから選べばハズレなし。ASMR・ゲームの厳選10作品を毎日更新。",
+  alternates: { canonical: "/recommendations/" },
   openGraph: {
     title: "今日のおすすめ作品 | 2D-ADB",
     description: "迷ったらここから選べばハズレなし。ASMR・ゲームの厳選10作品を毎日更新。",

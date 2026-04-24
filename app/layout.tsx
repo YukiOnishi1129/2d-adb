@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://2d-adb.com"),
   title: "2D-ADB | ASMR・同人音声の厳選おすすめ作品",
   description:
     "迷ったらここから選べばハズレなし。ASMR・同人音声・同人ゲームの厳選作品を紹介。評価・ランキング・セール情報もまとめてチェック。",

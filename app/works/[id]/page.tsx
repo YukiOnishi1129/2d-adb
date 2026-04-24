@@ -150,6 +150,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     keywords: keywords.join(", "),
+    alternates: { canonical: `/works/${id}/` },
     openGraph: {
       title,
       description,
