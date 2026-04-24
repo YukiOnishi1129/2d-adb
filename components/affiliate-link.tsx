@@ -55,6 +55,7 @@ export function AffiliateLink({
       window.gtag("event", `${platform}_click`, {
         product_id: pid,
         work_id: workId,
+        transport_type: "beacon",
       });
     }
   };
