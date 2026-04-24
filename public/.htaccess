@@ -8,6 +8,10 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
+# www あり → www なしに301リダイレクト（SEO URL正規化）
+RewriteCond %{HTTP_HOST} ^www\.2d-adb\.com$ [NC]
+RewriteRule ^(.*)$ https://2d-adb.com/$1 [R=301,L]
+
 # 既存のファイル・ディレクトリはそのまま
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
