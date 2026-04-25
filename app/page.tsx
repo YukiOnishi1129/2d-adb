@@ -1,6 +1,7 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { HeroSaleBanner } from "@/components/hero-sale-banner";
+import { isDoujinFestivalActive, getDoujinFestivalAffiliateUrl } from "@/lib/doujin-festival-campaign";
 import { HorizontalScrollSection } from "@/components/horizontal-scroll-section";
 import { TrendingChips } from "@/components/trending-chips";
 import { FeaturedBanners } from "@/components/featured-banners";
@@ -103,6 +104,29 @@ export default async function Home() {
       <Header />
 
       <main className="mx-auto max-w-7xl px-6 py-4">
+        {/* FANZA春の同人祭バナー（〜2026/05/18 11:59まで） */}
+        {isDoujinFestivalActive() && (
+          <a
+            href={getDoujinFestivalAffiliateUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-4 flex items-center justify-between gap-3 rounded-lg bg-gradient-to-r from-pink-400 via-rose-500 to-red-500 p-4 text-white shadow-lg transition-transform hover:scale-[1.01]"
+          >
+            <div className="flex flex-col">
+              <span className="text-xs font-bold opacity-90">🌸 期間限定 〜5/18 11:59</span>
+              <span className="text-lg font-black tracking-wide md:text-xl">
+                FANZA春の同人祭 開催中！
+              </span>
+              <span className="text-xs opacity-90">
+                人気作品50%OFF・ゲーム300円・同人祭限定クーポンなど多数
+              </span>
+            </div>
+            <span className="shrink-0 rounded-full bg-white/20 px-3 py-1.5 text-sm font-bold backdrop-blur">
+              特集を見る →
+            </span>
+          </a>
+        )}
+
         {/* セールバナー（コンパクト） */}
         {saleWorks.length > 0 && <HeroSaleBanner saleWorks={saleWorks} />}
 
