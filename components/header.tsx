@@ -8,17 +8,17 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         {/* ロゴ + タグライン */}
-        <Link href="/" className="flex flex-col">
-          <div className="flex items-center gap-1">
-            <span className="text-lg font-bold text-primary md:text-xl">
-              2D
+        <Link href="/" className="flex shrink-0 flex-col">
+          <div className="flex items-center gap-1 whitespace-nowrap">
+            <span className="text-lg font-bold md:text-xl">
+              <span className="text-primary">2D</span>
+              <span className="text-foreground">-ADB</span>
             </span>
-            <span className="text-lg font-bold text-foreground md:text-xl">
-              -ADB
+            <span className="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">
+              PR
             </span>
-            <span className="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">PR</span>
           </div>
-          <span className="text-[9px] text-muted-foreground md:text-[10px]">
+          <span className="whitespace-nowrap text-[9px] text-muted-foreground md:text-[10px]">
             声優×性癖で探す検索ツール
           </span>
         </Link>

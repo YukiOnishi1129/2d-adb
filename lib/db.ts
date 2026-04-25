@@ -54,6 +54,17 @@ function filterAvailable(works: DbWork[]): DbWork[] {
   return works.filter((w) => w.is_available !== false);
 }
 
+// 単価加重スコア: 「評価」を主軸に「価格」を副軸として組み込む
+// 評価が同じなら高単価作品を優先（DLsiteは報酬率10%固定なので価格が直接報酬に効く）
+// 基準価格500円で重み1倍、1000円で約1.09倍、2000円で約1.18倍、3000円で約1.23倍
+function priceWeightedScore(work: DbWork): number {
+  const rating = work.rating_dlsite || work.rating_fanza || 0;
+  const price = work.price_dlsite || work.price_fanza || 0;
+  if (price < 100) return rating;
+  const priceWeight = 1 + Math.log10(price / 500) * 0.3;
+  return rating * priceWeight;
+}
+
 // 新着作品を取得
 export async function getNewWorks(limit = 20): Promise<DbWork[]> {
   const works = await getWorks();
@@ -626,7 +637,7 @@ export async function getRelatedWorks(
   return enrichWorksWithCircleName(results);
 }
 
-// 同じサークルの人気作品を取得
+// 同じサークルの人気作品を取得（評価×単価重み）
 export async function getPopularWorksByCircle(
   circleId: number,
   excludeWorkId: number,
@@ -637,9 +648,9 @@ export async function getPopularWorksByCircle(
     (w) => w.circle_id === circleId && w.id !== excludeWorkId,
   );
   const sorted = available.sort((a, b) => {
-    const ratingA = a.rating_dlsite || a.rating_fanza || 0;
-    const ratingB = b.rating_dlsite || b.rating_fanza || 0;
-    if (ratingA !== ratingB) return ratingB - ratingA;
+    const scoreA = priceWeightedScore(a);
+    const scoreB = priceWeightedScore(b);
+    if (scoreA !== scoreB) return scoreB - scoreA;
     const dateA = a.release_date || "";
     const dateB = b.release_date || "";
     return dateB.localeCompare(dateA);
@@ -647,7 +658,7 @@ export async function getPopularWorksByCircle(
   return enrichWorksWithCircleName(sorted.slice(0, limit));
 }
 
-// 同じCVの人気作品を取得
+// 同じCVの人気作品を取得（評価×単価重み）
 export async function getPopularWorksByActor(
   actorName: string,
   excludeWorkId: number,
@@ -658,9 +669,9 @@ export async function getPopularWorksByActor(
     (w) => w.id !== excludeWorkId && w.cv_names && w.cv_names.includes(actorName),
   );
   const sorted = available.sort((a, b) => {
-    const ratingA = a.rating_dlsite || a.rating_fanza || 0;
-    const ratingB = b.rating_dlsite || b.rating_fanza || 0;
-    if (ratingA !== ratingB) return ratingB - ratingA;
+    const scoreA = priceWeightedScore(a);
+    const scoreB = priceWeightedScore(b);
+    if (scoreA !== scoreB) return scoreB - scoreA;
     const dateA = a.release_date || "";
     const dateB = b.release_date || "";
     return dateB.localeCompare(dateA);
@@ -687,9 +698,9 @@ export async function getSimilarWorksByTags(
     }))
     .sort((a, b) => {
       if (a.matchCount !== b.matchCount) return b.matchCount - a.matchCount;
-      const ratingA = a.work.rating_dlsite || a.work.rating_fanza || 0;
-      const ratingB = b.work.rating_dlsite || b.work.rating_fanza || 0;
-      if (ratingA !== ratingB) return ratingB - ratingA;
+      const scoreA = priceWeightedScore(a.work);
+      const scoreB = priceWeightedScore(b.work);
+      if (scoreA !== scoreB) return scoreB - scoreA;
       const dateA = a.work.release_date || "";
       const dateB = b.work.release_date || "";
       return dateB.localeCompare(dateA);

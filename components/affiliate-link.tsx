@@ -35,6 +35,9 @@ interface AffiliateLinkProps {
   size?: "default" | "sm" | "lg" | "icon";
   variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
   disabled?: boolean;
+  // GA4 イベント名を上書きしたい場合に指定（例: "fanza_signup_click"）
+  // 省略時は `${platform}_click` （既存挙動）
+  eventName?: string;
 }
 
 export function AffiliateLink({
@@ -47,12 +50,14 @@ export function AffiliateLink({
   size = "sm",
   variant = "outline",
   disabled = false,
+  eventName,
 }: AffiliateLinkProps) {
   const handleClick = () => {
     if (typeof window !== "undefined" && window.gtag) {
       // productIdが渡されなければURLから抽出
       const pid = productId || extractProductId(url, platform);
-      window.gtag("event", `${platform}_click`, {
+      const event = eventName ?? `${platform}_click`;
+      window.gtag("event", event, {
         product_id: pid,
         work_id: workId,
         transport_type: "beacon",

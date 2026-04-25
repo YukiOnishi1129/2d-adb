@@ -26,6 +26,7 @@ import {
   getVoiceActorFeatureByName,
 } from "@/lib/db";
 import { dbWorkToWork } from "@/lib/types";
+import { getFanzaInitialDiscount } from "@/lib/fanza-promo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -499,6 +500,50 @@ export default async function WorkDetailPage({ params }: Props) {
                     <p className="mt-2 text-center text-xs text-muted-foreground">
                       無料の体験版・サンプルで確認できます
                     </p>
+
+                    {/* FANZA同人 初回300円OFF訴求（FANZA優先CTAかつ条件を満たす作品のみ） */}
+                    {ctaPlatform === "fanza" && (() => {
+                      const discount = getFanzaInitialDiscount(work);
+                      if (!discount) return null;
+                      return (
+                        <div className="mt-3 rounded-md border-2 border-pink-500 bg-gradient-to-br from-pink-500/15 to-pink-600/10 p-3 shadow-md">
+                          <div className="mb-2 flex items-center gap-2">
+                            <span className="inline-flex items-center rounded-full bg-pink-500 px-2 py-0.5 text-xs font-bold text-white">
+                              初回購入限定
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              FANZA同人 はじめての方
+                            </span>
+                          </div>
+                          <p className="text-base font-bold text-foreground">
+                            実質{" "}
+                            <span className="text-2xl text-pink-500">
+                              {formatPrice(discount.effectivePrice)}
+                            </span>
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              （{formatPrice(discount.couponOff)}OFFクーポン適用時）
+                            </span>
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            無料会員登録でクーポン取得可能
+                          </p>
+                          <AffiliateLink
+                            platform="fanza"
+                            url={discount.couponLandingUrl}
+                            workId={work.id}
+                            eventName="fanza_signup_click"
+                            size="default"
+                            variant="default"
+                            className="mt-2 w-full bg-pink-500 font-bold text-white hover:bg-pink-600"
+                          >
+                            クーポンを取得する →
+                          </AffiliateLink>
+                          <p className="mt-1.5 text-center text-[10px] text-muted-foreground">
+                            ※対象商品に限ります
+                          </p>
+                        </div>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               );
@@ -946,6 +991,50 @@ export default async function WorkDetailPage({ params }: Props) {
                   <p className="mt-3 text-center text-xs text-muted-foreground">
                     無料の体験版・サンプルで確認できます
                   </p>
+
+                  {/* FANZA同人 初回300円OFF訴求（FANZA優先CTAかつ条件を満たす作品のみ） */}
+                  {ctaPlatform === "fanza" && (() => {
+                    const discount = getFanzaInitialDiscount(work);
+                    if (!discount) return null;
+                    return (
+                      <div className="mt-4 rounded-md border-2 border-pink-500 bg-gradient-to-br from-pink-500/15 to-pink-600/10 p-3 shadow-md">
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="inline-flex items-center rounded-full bg-pink-500 px-2 py-0.5 text-xs font-bold text-white">
+                            初回購入限定
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            FANZA同人 はじめての方
+                          </span>
+                        </div>
+                        <p className="text-base font-bold text-foreground">
+                          実質{" "}
+                          <span className="text-2xl text-pink-500">
+                            {formatPrice(discount.effectivePrice)}
+                          </span>
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            （{formatPrice(discount.couponOff)}OFFクーポン適用時）
+                          </span>
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          無料会員登録でクーポン取得可能
+                        </p>
+                        <AffiliateLink
+                          platform="fanza"
+                          url={discount.couponLandingUrl}
+                          workId={work.id}
+                          eventName="fanza_signup_click"
+                          size="default"
+                          variant="default"
+                          className="mt-2 w-full bg-pink-500 font-bold text-white hover:bg-pink-600"
+                        >
+                          クーポンを取得する →
+                        </AffiliateLink>
+                        <p className="mt-1.5 text-center text-[10px] text-muted-foreground">
+                          ※対象商品に限ります
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             );
