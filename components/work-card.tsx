@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Image, Gamepad2 } from "lucide-react";
+import { getFanzaInitialDiscount } from "@/lib/fanza-promo";
 
 interface WorkCardProps {
   work: Work;
@@ -174,6 +175,9 @@ export const WorkCard = memo(function WorkCard({ work }: WorkCardProps) {
   const unitPrice = getUnitPrice(work);
   const specBadge = getSpecBadge(work);
   const cvNames = work.killerWords.cvNames || work.actors;
+  // FANZA優先 & クーポン対象（FANZA初回購入の人向け訴求）
+  const showFanzaCouponBadge =
+    cheaper?.platform === "FANZA" && getFanzaInitialDiscount(work) !== null;
 
   return (
     <Link href={`/works/${work.id}`}>
@@ -298,6 +302,13 @@ export const WorkCard = memo(function WorkCard({ work }: WorkCardProps) {
               </span>
             )}
           </div>
+
+          {/* FANZA初回購入クーポン対象バッジ */}
+          {showFanzaCouponBadge && (
+            <p className="mt-1.5 text-[10px] font-medium text-pink-500">
+              💡 FANZA初回なら -300円OFF対象
+            </p>
+          )}
 
           {/* 評価 */}
           {(work.ratingDlsite || work.ratingFanza) && (

@@ -3,7 +3,8 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SisterSiteBanner } from "@/components/sister-site-banner";
 import { Breadcrumb } from "@/components/breadcrumb";
-import { ProductJsonLd, ReviewJsonLd, BreadcrumbJsonLd } from "@/components/json-ld";
+import { ProductJsonLd, ReviewJsonLd, BreadcrumbJsonLd, FaqJsonLd } from "@/components/json-ld";
+import { buildWorkFaq } from "@/lib/work-faq";
 import { SaleTimer } from "@/components/sale-timer";
 import { SaleBannerCountdown } from "@/components/sale-banner-countdown";
 import { SpecTable } from "@/components/spec-table";
@@ -197,7 +198,7 @@ export default async function WorkDetailPage({ params }: Props) {
 
   // 関連作品 + 特集データ
   const [dbRelatedWorks, allFeatures, voiceActorFeatures] = await Promise.all([
-    getRelatedWorks(work.id, 4),
+    getRelatedWorks(work.id, 8),
     getAllFeatures(),
     getAllVoiceActorFeatures(),
   ]);
@@ -206,9 +207,9 @@ export default async function WorkDetailPage({ params }: Props) {
   // 同じサークル/CVの人気作品 + タグベースのおすすめ
   const mainActor = work.actors?.[0]; // 最初のCV
   const [dbCircleWorks, dbActorWorks, dbSimilarWorks] = await Promise.all([
-    work.circleId ? getPopularWorksByCircle(work.circleId, work.id, 4) : Promise.resolve([]),
-    mainActor ? getPopularWorksByActor(mainActor, work.id, 4) : Promise.resolve([]),
-    getSimilarWorksByTags(work.id, work.aiTags || [], 4),
+    work.circleId ? getPopularWorksByCircle(work.circleId, work.id, 6) : Promise.resolve([]),
+    mainActor ? getPopularWorksByActor(mainActor, work.id, 6) : Promise.resolve([]),
+    getSimilarWorksByTags(work.id, work.aiTags || [], 6),
   ]);
   const circleWorks = dbCircleWorks.map(dbWorkToWork);
   const actorWorks = dbActorWorks.map(dbWorkToWork);
@@ -264,12 +265,15 @@ export default async function WorkDetailPage({ params }: Props) {
     { label: work.title },
   ];
 
+  const faqItems = buildWorkFaq(work);
+
   return (
     <div className="min-h-screen bg-background pb-32 md:pb-0">
       {/* 構造化データ */}
       <ProductJsonLd work={work} />
       <ReviewJsonLd work={work} />
       <BreadcrumbJsonLd items={breadcrumbItems} />
+      <FaqJsonLd items={faqItems} />
 
       <Header />
 
@@ -313,19 +317,38 @@ export default async function WorkDetailPage({ params }: Props) {
               {getCategoryLabel(work.genre, work.category)}
             </Badge>
           )}
-          {/* 高評価・レビュー数バッジ（実データ） */}
-          <div className="absolute bottom-4 left-4 flex gap-2">
-            {work.ratingDlsite && work.ratingDlsite >= 4.5 && (
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/90 text-white text-xs font-bold backdrop-blur-sm">
-                ★ 高評価
+          {/* 高評価・レビュー数・ランキングバッジ（社会的証明） */}
+          {(() => {
+            const rating = work.ratingDlsite || work.ratingFanza;
+            const reviewCount =
+              (work.reviewCountDlsite || 0) + (work.reviewCountFanza || 0);
+            const bestRank = work.dlsiteRank && work.fanzaRank
+              ? Math.min(work.dlsiteRank, work.fanzaRank)
+              : work.dlsiteRank || work.fanzaRank;
+            return (
+              <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1.5">
+                {/* ランキング上位（最強の社会的証明） */}
+                {bestRank && bestRank <= 100 && (
+                  <div className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 px-3 py-1 text-xs font-bold text-white shadow-lg backdrop-blur-sm">
+                    🏆 ランキング{bestRank <= 10 ? "TOP10入り" : bestRank <= 30 ? "TOP30入り" : `${bestRank}位`}
+                  </div>
+                )}
+                {/* 評価値（具体的な数字を出す） */}
+                {rating && rating >= 4.0 && (
+                  <div className="inline-flex items-center gap-1 rounded-full bg-amber-500 px-3 py-1 text-xs font-bold text-white shadow-lg backdrop-blur-sm">
+                    {rating >= 4.5 ? "🌟" : "⭐"} ★{rating.toFixed(1)}
+                    {rating >= 4.5 && <span className="ml-0.5">高評価</span>}
+                  </div>
+                )}
+                {/* レビュー件数（多いほど信頼性高） */}
+                {reviewCount >= 10 && (
+                  <div className="inline-flex items-center gap-1 rounded-full bg-black/75 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">
+                    💬 {reviewCount.toLocaleString()}件のレビュー
+                  </div>
+                )}
               </div>
-            )}
-            {work.reviewCountDlsite && work.reviewCountDlsite >= 10 && (
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-black/70 text-white text-xs font-medium backdrop-blur-sm">
-                💬 {work.reviewCountDlsite.toLocaleString()}件のレビュー
-              </div>
-            )}
-          </div>
+            );
+          })()}
         </div>
 
         {/* 作品情報セクション */}
@@ -1045,6 +1068,33 @@ export default async function WorkDetailPage({ params }: Props) {
             <p className="text-sm text-muted-foreground">
               発売日: {work.releaseDate}
             </p>
+          )}
+
+          {/* FAQ（よくある質問） */}
+          {faqItems.length > 0 && (
+            <section className="mt-10 space-y-3">
+              <h2 className="text-lg font-bold text-foreground">
+                ❓ よくある質問
+              </h2>
+              <div className="space-y-2">
+                {faqItems.map((item, index) => (
+                  <details
+                    key={index}
+                    className="group rounded-lg border border-border bg-card transition-colors open:bg-secondary/30"
+                  >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 font-medium text-foreground">
+                      <span className="text-sm">Q. {item.question}</span>
+                      <span className="text-xs text-muted-foreground transition-transform group-open:rotate-180">
+                        ▼
+                      </span>
+                    </summary>
+                    <div className="border-t border-border px-4 py-3 text-sm text-muted-foreground">
+                      <p className="whitespace-pre-line">A. {item.answer}</p>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </section>
           )}
 
           {/* 声優特集バナー（この作品の声優に特集がある場合） */}
