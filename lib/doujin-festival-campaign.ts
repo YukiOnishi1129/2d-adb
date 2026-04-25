@@ -9,7 +9,8 @@ const DOUJIN_FESTIVAL_LANDING_URL =
   "https://www.dmm.co.jp/dc/doujin/feature/season_sale/index_html/=/ch_navi=none/";
 
 // キャンペーン終了日時（JST 2026/05/18 11:59:59 まで有効）
-const CAMPAIGN_END = new Date("2026-05-18T11:59:59+09:00");
+export const CAMPAIGN_END_ISO = "2026-05-18T11:59:59+09:00";
+const CAMPAIGN_END = new Date(CAMPAIGN_END_ISO);
 
 // キャンペーン全体が現時点で有効か
 export function isDoujinFestivalActive(now: Date = new Date()): boolean {

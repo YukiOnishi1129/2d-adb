@@ -1,5 +1,9 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
+
+const subscribe = () => () => {};
+
 declare global {
   interface Window {
     gtag?: (
@@ -23,6 +27,10 @@ interface CampaignBannerProps {
   ctaLabel: string;
   // 任意の追加イベントパラメータ
   extraEventParams?: Record<string, unknown>;
+  // キャンペーン終了日時（ISO 8601、例: "2026-05-18T11:59:59+09:00"）
+  // ビルド時に親コンポーネントの判定でレンダリング済みでも、
+  // hydration 時に再判定して期限切れなら非表示にする（最大24時間のデプロイ遅延ガード）
+  endDate?: string;
 }
 
 export function CampaignBanner({
@@ -34,7 +42,22 @@ export function CampaignBanner({
   description,
   ctaLabel,
   extraEventParams,
+  endDate,
 }: CampaignBannerProps) {
+  // SSR/SSG 時は false（バナー表示）、hydration 後にクライアントで期限判定
+  // useSyncExternalStore は SSR スナップショット（第3引数）と
+  // クライアントスナップショット（第2引数）を分離できるため、
+  // useEffect + setState のような cascading render を起こさない
+  const isExpired = useSyncExternalStore(
+    subscribe,
+    () => {
+      if (!endDate) return false;
+      const end = new Date(endDate).getTime();
+      return Number.isFinite(end) && Date.now() > end;
+    },
+    () => false,
+  );
+
   const handleClick = () => {
     if (typeof window !== "undefined" && window.gtag) {
       window.gtag("event", eventName, {
@@ -43,6 +66,8 @@ export function CampaignBanner({
       });
     }
   };
+
+  if (isExpired) return null;
 
   return (
     <a
