@@ -35,6 +35,15 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
+// FANZAタイトルから割引文字列等のノイズを除去（SEO用にクリーンなタイトルにする）
+function sanitizeTitleForSeo(rawTitle: string): string {
+  if (!rawTitle) return "";
+  let cleaned = rawTitle;
+  cleaned = cleaned.replace(/【[^】]*(?:OFF|まで|セール|キャンペーン|期間限定|弾|割引)[^】]*】/g, "");
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+  return cleaned;
+}
+
 function formatPrice(price: number): string {
   return `¥${price.toLocaleString()}`;
 }
@@ -104,57 +113,66 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const work = dbWorkToWork(dbWork);
+  const cleanTitle = sanitizeTitleForSeo(work.title) || work.title;
+  const isOnSale = work.isOnSale && work.maxDiscountRate;
 
-  // タイトル: セール中なら割引率を含める + レビュー・感想キーワード
-  const salePrefix =
-    work.isOnSale && work.maxDiscountRate
-      ? `【${work.maxDiscountRate}%OFF】`
-      : "";
-  const title = `${salePrefix}${work.title} レビュー・感想 | 2D-ADB`;
+  // SEO重視のタイトル: 「作品名｜サークル・声優1・ジャンル1のレビュー・感想 | 2D-ADB」
+  const topActors = (work.actors || []).slice(0, 2);
+  const topGenres = (work.aiTags || []).slice(0, 2);
+  const titleParts: string[] = [];
+  if (work.circleName) titleParts.push(work.circleName);
+  titleParts.push(...topActors);
+  titleParts.push(...topGenres);
+  // 作品種別ラベル（ASMR / 同人ゲーム など）
+  const categoryLabel =
+    work.category === "ASMR" ? "ASMR" : work.category === "ゲーム" ? "同人ゲーム" : "同人作品";
+  const titleSuffix =
+    titleParts.length > 0
+      ? `｜${titleParts.slice(0, 4).join("・")}の${categoryLabel}レビュー・感想`
+      : `｜${categoryLabel}レビュー・感想`;
+  const salePrefix = isOnSale ? `【${work.maxDiscountRate}%OFF】` : "";
+  const pageTitle = `${salePrefix}${cleanTitle}${titleSuffix} | 2D-ADB`;
 
-  // description: 評価 + セール情報 + AI生成の魅力ポイント
-  const ratingText = work.ratingDlsite
-    ? `★${work.ratingDlsite.toFixed(1)}`
-    : work.ratingFanza
-      ? `★${work.ratingFanza.toFixed(1)}`
-      : "";
-  const saleText = work.isOnSale && work.maxDiscountRate
-    ? `${work.maxDiscountRate}%OFFセール中。`
+  // SEO重視のdescription:
+  // 検索結果（SERP）冒頭60文字でユーザーが「誰の何の作品か」即理解できるよう、
+  // 順番は: ①作品の本質（サークル+声優+作品種別） → ②本文 → ③評価/価格/割引（詳細）
+  const ratingValue = work.ratingDlsite || work.ratingFanza;
+  const reviewCount =
+    (work.reviewCountDlsite || 0) + (work.reviewCountFanza || 0);
+  const ratingText = ratingValue
+    ? `★${ratingValue.toFixed(1)}（${reviewCount}件）`
     : "";
-  const baseDescription =
-    work.aiAppealPoints ||
-    work.aiRecommendReason ||
-    work.aiSummary ||
-    "";
-  const description = [
-    ratingText,
-    saleText,
-    baseDescription,
-  ].filter(Boolean).join(" ").trim()
-    || `${work.title}のレビュー・感想・セール情報をチェック。DLsite・FANZAの価格を比較`;
+  const saleText = isOnSale ? `${work.maxDiscountRate}%OFFセール中` : "";
+  const detailParts = [ratingText, saleText].filter(Boolean).join("｜");
+
+  // 冒頭60文字に詰める核心情報: 「{サークル}の{声優}出演{ジャンル}{作品種別}」
+  const actorPhrase = topActors.length > 0 ? `${topActors.join("・")}出演` : "";
+  const genrePhrase = topGenres.length > 0 ? `${topGenres.slice(0, 2).join("・")}` : "";
+  const leadCore = work.circleName
+    ? `${work.circleName}${actorPhrase ? `の${actorPhrase}` : "の"}${genrePhrase}${categoryLabel}レビュー。`
+    : actorPhrase
+    ? `${actorPhrase}${genrePhrase}${categoryLabel}レビュー。`
+    : `${categoryLabel}レビュー。`;
+
+  const baseBody = work.aiAppealPoints || work.aiRecommendReason || work.aiSummary || "";
+  const usedBeforeBody = leadCore.length;
+  const reservedAfterBody = detailParts.length + 1;
+  const remaining = Math.max(0, 158 - usedBeforeBody - reservedAfterBody);
+  const trimmedBody =
+    baseBody.length > remaining
+      ? baseBody.slice(0, Math.max(0, remaining - 1)) + "…"
+      : baseBody;
+  const description = [leadCore + trimmedBody, detailParts].filter(Boolean).join("｜");
 
   // OG画像: サムネイル優先
   const ogImage = work.thumbnailUrl || work.sampleImages[0] || null;
 
-  // キーワード: タグ + CV名 + サークル名 + カテゴリ
-  const keywords = [
-    ...(work.aiTags || []),
-    ...(work.actors || []),
-    work.circleName,
-    work.category,
-    "ASMR",
-    "同人音声",
-    "DLsite",
-    "FANZA",
-  ].filter(Boolean) as string[];
-
   return {
-    title,
+    title: pageTitle,
     description,
-    keywords: keywords.join(", "),
     alternates: { canonical: `/works/${id}/` },
     openGraph: {
-      title,
+      title: cleanTitle,
       description,
       type: "website",
       ...(ogImage && {
@@ -170,7 +188,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: ogImage ? "summary_large_image" : "summary",
-      title,
+      title: cleanTitle,
       description,
       ...(ogImage && { images: [ogImage] }),
     },
@@ -298,7 +316,7 @@ export default async function WorkDetailPage({ params }: Props) {
               work.thumbnailUrl ||
               "https://placehold.co/800x450/f4f4f5/71717a?text=No+Image"
             }
-            alt={work.title}
+            alt={`${work.title}${work.circleName ? ` - ${work.circleName}` : ""}${work.actors && work.actors.length > 0 ? `（${work.actors.slice(0, 2).join("・")}出演）` : ""}${work.aiTags && work.aiTags.length > 0 ? `／${work.aiTags.slice(0, 3).join("・")}` : ""}の${work.category === "ASMR" ? "ASMR" : work.category === "ゲーム" ? "同人ゲーム" : "同人作品"}サムネイル`}
             className="w-full max-h-[500px] object-contain bg-black/5"
           />
           {isOnSale && work.maxDiscountRate && work.maxDiscountRate > 0 && (
@@ -401,8 +419,26 @@ export default async function WorkDetailPage({ params }: Props) {
                 })()}
             </div>
 
+            {/* タイトル（h1: 検索エンジンへの主要キーワード集約。サブタイトルでサークル/声優/ジャンルを明示） */}
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               {work.title}
+              {(work.circleName || (work.actors && work.actors.length > 0) || (work.aiTags && work.aiTags.length > 0)) && (() => {
+                const categoryLabel =
+                  work.category === "ASMR" ? "ASMR" : work.category === "ゲーム" ? "同人ゲーム" : "同人作品";
+                const parts: string[] = [];
+                if (work.circleName) parts.push(work.circleName);
+                if (work.actors && work.actors.length > 0) {
+                  parts.push(`${work.actors.slice(0, 2).join("・")}出演`);
+                }
+                if (work.aiTags && work.aiTags.length > 0) {
+                  parts.push(`${work.aiTags.slice(0, 2).join("・")}`);
+                }
+                return (
+                  <span className="block mt-1 text-sm md:text-base font-normal text-muted-foreground">
+                    {parts.join("／")}の{categoryLabel}レビュー・感想
+                  </span>
+                );
+              })()}
             </h1>
 
             {/* サークル */}

@@ -189,7 +189,7 @@ export const WorkCard = memo(function WorkCard({ work }: WorkCardProps) {
               work.thumbnailUrl ||
               "https://placehold.co/600x314/f4f4f5/71717a?text=No+Image"
             }
-            alt={work.title}
+            alt={`${work.title}${work.circleName ? ` - ${work.circleName}` : ""}${work.actors && work.actors.length > 0 ? `（${work.actors.slice(0, 2).join("・")}出演）` : ""}${work.aiTags && work.aiTags.length > 0 ? `／${work.aiTags.slice(0, 3).join("・")}` : ""}の${work.category === "ASMR" ? "ASMR" : work.category === "ゲーム" ? "同人ゲーム" : "同人作品"}`}
             loading="lazy"
             onError={(e) => {
               e.currentTarget.src =
