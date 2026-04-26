@@ -36,6 +36,9 @@ async function main() {
   // prebuildで生成済みのJSONキャッシュを使用
   const works = loadJson("works.json");
   const circles = loadJson("circles.json");
+  // 特集データ（声優特集 / 性癖特集）
+  const voiceActorFeatures = loadJson("voice_actor_features.json");
+  const featureRecommendations = loadJson("feature_recommendations.json");
 
   // 利用可能な作品のみ
   const availableWorks = works.filter((w) => w.is_available !== false);
@@ -72,7 +75,7 @@ async function main() {
     .map((c) => c.name);
 
   console.log(
-    `[Sitemap] Works: ${workIds.length}, Actors: ${actorNames.size}, Tags: ${tagNames.size}, Circles: ${circleNames.length}`
+    `[Sitemap] Works: ${workIds.length}, Actors: ${actorNames.size}, Tags: ${tagNames.size}, Circles: ${circleNames.length}, VAFeatures: ${voiceActorFeatures.length}, FeatureRecs: ${featureRecommendations.length}`
   );
 
   const today = new Date().toISOString().split("T")[0];
@@ -87,6 +90,8 @@ async function main() {
     { path: "/sale/", priority: "0.9", changefreq: "daily" },
     { path: "/sale/tokushu/", priority: "0.9", changefreq: "daily" },
     { path: "/recommendations/", priority: "0.8", changefreq: "daily" },
+    { path: "/tokushu/", priority: "0.8", changefreq: "daily" },
+    { path: "/tokushu/cv/", priority: "0.7", changefreq: "weekly" },
     { path: "/search/", priority: "0.7", changefreq: "weekly" },
     { path: "/cv/", priority: "0.7", changefreq: "weekly" },
     { path: "/tags/", priority: "0.7", changefreq: "weekly" },
@@ -154,6 +159,29 @@ async function main() {
       <loc>${BASE_URL}/circles/${encodeURIComponent(name)}/</loc>
       <changefreq>weekly</changefreq>
       <priority>0.6</priority>
+    </url>`);
+  }
+
+  // 声優特集ページ /tokushu/cv/[name]/
+  // GA で PV 取れているのに sitemap 欠落していたため追加
+  for (const feature of voiceActorFeatures) {
+    if (!feature?.name) continue;
+    urls.push(`
+    <url>
+      <loc>${BASE_URL}/tokushu/cv/${encodeURIComponent(feature.name)}/</loc>
+      <changefreq>weekly</changefreq>
+      <priority>0.7</priority>
+    </url>`);
+  }
+
+  // 性癖/ジャンル特集ページ /tokushu/[slug]/
+  for (const feature of featureRecommendations) {
+    if (!feature?.slug) continue;
+    urls.push(`
+    <url>
+      <loc>${BASE_URL}/tokushu/${encodeURIComponent(feature.slug)}/</loc>
+      <changefreq>weekly</changefreq>
+      <priority>0.7</priority>
     </url>`);
   }
 
