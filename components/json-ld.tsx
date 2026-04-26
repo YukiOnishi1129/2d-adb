@@ -9,6 +9,12 @@ interface ProductJsonLdProps {
   work: Work;
 }
 
+// ビルド時の日時を ISO 8601 形式で取得（schema.org の dateModified に使用）
+// 価格・セール情報を毎日更新しているサイトであることを Google に伝える
+function getBuildDateIso(): string {
+  return new Date().toISOString();
+}
+
 export function ProductJsonLd({ work }: ProductJsonLdProps) {
   // 最安価格を計算
   const dlsiteFinalPrice =
@@ -28,6 +34,10 @@ export function ProductJsonLd({ work }: ProductJsonLdProps) {
   const rating = work.ratingDlsite || work.ratingFanza;
   const reviewCount = work.reviewCountDlsite || work.reviewCountFanza;
 
+  // セール終了日（DLsite優先、なければFANZA）
+  const saleEndDate = work.saleEndDateDlsite || work.saleEndDateFanza;
+  const buildDate = getBuildDateIso();
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -41,6 +51,8 @@ export function ProductJsonLd({ work }: ProductJsonLdProps) {
         }
       : undefined,
     category: work.category || "デジタルコンテンツ",
+    // 最終更新日（ビルド毎に自動更新、Google に「アクティブに更新中のサイト」と伝える）
+    dateModified: buildDate,
     offers: {
       "@type": "AggregateOffer",
       priceCurrency: "JPY",
@@ -48,6 +60,8 @@ export function ProductJsonLd({ work }: ProductJsonLdProps) {
       highPrice: Math.max(work.priceDlsite || 0, work.priceFanza || 0),
       offerCount: [work.priceDlsite, work.priceFanza].filter(Boolean).length || 1,
       availability: "https://schema.org/InStock",
+      // セール終了日が設定されていれば priceValidUntil として伝える
+      ...(saleEndDate && { priceValidUntil: saleEndDate }),
     },
     ...(rating &&
       reviewCount && {
@@ -74,6 +88,8 @@ export function ReviewJsonLd({ work }: ProductJsonLdProps) {
 
   if (!reviewBody) return null;
 
+  const buildDate = getBuildDateIso();
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Review",
@@ -87,6 +103,9 @@ export function ReviewJsonLd({ work }: ProductJsonLdProps) {
       name: "2D-ADB",
     },
     reviewBody: reviewBody,
+    // レビューの公開日 / 最終更新日（毎日のビルドで更新される）
+    datePublished: buildDate,
+    dateModified: buildDate,
   };
 
   return (

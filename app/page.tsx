@@ -3,6 +3,7 @@ import { Footer } from "@/components/footer";
 import { HeroSaleBanner } from "@/components/hero-sale-banner";
 import { CampaignBanner } from "@/components/campaign-banner";
 import { isDoujinFestivalActive, getDoujinFestivalAffiliateUrl, CAMPAIGN_END_ISO as DOUJIN_FESTIVAL_END } from "@/lib/doujin-festival-campaign";
+import { getFanzaSignupCtaUrl } from "@/lib/fanza-promo";
 import { HorizontalScrollSection } from "@/components/horizontal-scroll-section";
 import { TrendingChips } from "@/components/trending-chips";
 import { FeaturedBanners } from "@/components/featured-banners";
@@ -118,6 +119,19 @@ export default async function Home() {
             endDate={DOUJIN_FESTIVAL_END}
           />
         )}
+
+        {/* FANZA同人 初回購入限定 300円OFFクーポン CTA（恒久施策、新規会員登録獲得目的） */}
+        <CampaignBanner
+          href={getFanzaSignupCtaUrl()}
+          eventName="fanza_signup_click"
+          extraEventParams={{ source: "top_cta_banner" }}
+          gradientClass="bg-gradient-to-r from-pink-500 via-pink-600 to-rose-600"
+          badge="🎁 初回購入限定"
+          title="FANZA同人 300円OFFクーポン進呈中"
+          description="無料会員登録するだけで取得可能・全作品対象（一部除く）"
+          ctaLabel="クーポンを取得 →"
+        />
+
 
         {/* セールバナー（コンパクト） */}
         {saleWorks.length > 0 && <HeroSaleBanner saleWorks={saleWorks} />}

@@ -65,6 +65,17 @@ function priceWeightedScore(work: DbWork): number {
   return rating * priceWeight;
 }
 
+// FANZA優先タイブレーカー
+// 同点の作品が並ぶときに FANZA 取扱作品を優先表示する
+// 戦略: FANZA 経由で新規会員登録（1件1,800円）を取りに行くため、リスト露出を増やす
+// 1: a を後ろに（b が先）, -1: a を前に（a が先）, 0: 同等
+function fanzaPriorityTiebreak(a: DbWork, b: DbWork): number {
+  const aHasFanza = a.price_fanza !== null;
+  const bHasFanza = b.price_fanza !== null;
+  if (aHasFanza === bHasFanza) return 0;
+  return aHasFanza ? -1 : 1;
+}
+
 // 新着作品を取得
 export async function getNewWorks(limit = 20): Promise<DbWork[]> {
   const works = await getWorks();
@@ -72,7 +83,8 @@ export async function getNewWorks(limit = 20): Promise<DbWork[]> {
   const sorted = available.sort((a, b) => {
     const dateA = a.release_date || "";
     const dateB = b.release_date || "";
-    return dateB.localeCompare(dateA);
+    if (dateA !== dateB) return dateB.localeCompare(dateA);
+    return fanzaPriorityTiebreak(a, b);
   });
   return enrichWorksWithCircleName(sorted.slice(0, limit));
 }
@@ -84,7 +96,8 @@ export async function getSaleWorks(limit = 20): Promise<DbWork[]> {
   const sorted = available.sort((a, b) => {
     const rateA = a.max_discount_rate || 0;
     const rateB = b.max_discount_rate || 0;
-    return rateB - rateA;
+    if (rateA !== rateB) return rateB - rateA;
+    return fanzaPriorityTiebreak(a, b);
   });
   return enrichWorksWithCircleName(sorted.slice(0, limit));
 }
@@ -101,7 +114,8 @@ export async function getWorksByGenre(
   const sorted = available.sort((a, b) => {
     const dateA = a.release_date || "";
     const dateB = b.release_date || "";
-    return dateB.localeCompare(dateA);
+    if (dateA !== dateB) return dateB.localeCompare(dateA);
+    return fanzaPriorityTiebreak(a, b);
   });
   return enrichWorksWithCircleName(sorted.slice(0, limit));
 }
@@ -143,13 +157,16 @@ export async function getBargainWorks(
     (w) => w.lowest_price !== null && w.lowest_price <= maxPrice,
   );
   const sorted = available.sort((a, b) => {
-    return (a.lowest_price || 0) - (b.lowest_price || 0);
+    const priceA = a.lowest_price || 0;
+    const priceB = b.lowest_price || 0;
+    if (priceA !== priceB) return priceA - priceB;
+    return fanzaPriorityTiebreak(a, b);
   });
   return enrichWorksWithCircleName(sorted.slice(0, limit));
 }
 
 // ボイス・ASMRランキング作品を取得
-// DLsite優先: DLsiteランクがあればそれを使用、なければFANZAランクを使用
+// FANZA優先: FANZA取扱がある作品を先に表示し、新規会員登録（1件1,800円）獲得を狙う
 export async function getVoiceRankingWorks(limit = 20): Promise<DbWork[]> {
   const works = await getWorks();
   const available = filterAvailable(works).filter(
@@ -158,25 +175,25 @@ export async function getVoiceRankingWorks(limit = 20): Promise<DbWork[]> {
       (w.dlsite_rank !== null || w.fanza_rank !== null),
   );
   const sorted = available.sort((a, b) => {
-    // DLsite優先: DLsiteランクがある作品を先に、その中でランク順
-    const aHasDlsite = a.dlsite_rank !== null;
-    const bHasDlsite = b.dlsite_rank !== null;
+    const aHasFanza = a.price_fanza !== null;
+    const bHasFanza = b.price_fanza !== null;
 
-    // 両方DLsiteあり → DLsiteランク順
-    if (aHasDlsite && bHasDlsite) {
-      if (a.dlsite_rank !== b.dlsite_rank) {
-        return (a.dlsite_rank || 9999) - (b.dlsite_rank || 9999);
-      }
+    // 片方だけ FANZA 取扱あり → FANZA ある方を優先
+    if (aHasFanza && !bHasFanza) return -1;
+    if (!aHasFanza && bHasFanza) return 1;
+
+    // 両方FANZAあり → FANZAランク優先（無ければ DLsite ランク）
+    if (aHasFanza && bHasFanza) {
+      const aRank = a.fanza_rank ?? a.dlsite_rank ?? 9999;
+      const bRank = b.fanza_rank ?? b.dlsite_rank ?? 9999;
+      if (aRank !== bRank) return aRank - bRank;
+    } else {
+      // 両方FANZAなし（DLsiteのみ） → DLsiteランク順
+      const aRank = a.dlsite_rank ?? 9999;
+      const bRank = b.dlsite_rank ?? 9999;
+      if (aRank !== bRank) return aRank - bRank;
     }
-    // 片方だけDLsiteあり → DLsiteある方を優先
-    if (aHasDlsite && !bHasDlsite) return -1;
-    if (!aHasDlsite && bHasDlsite) return 1;
-    // 両方FANZAのみ → FANZAランク順
-    if (!aHasDlsite && !bHasDlsite) {
-      if (a.fanza_rank !== b.fanza_rank) {
-        return (a.fanza_rank || 9999) - (b.fanza_rank || 9999);
-      }
-    }
+
     // 同ランクなら新しい順
     const dateA = a.release_date || "";
     const dateB = b.release_date || "";
@@ -186,7 +203,7 @@ export async function getVoiceRankingWorks(limit = 20): Promise<DbWork[]> {
 }
 
 // ゲームランキング作品を取得
-// DLsite優先: DLsiteランクがあればそれを使用、なければFANZAランクを使用
+// FANZA優先: FANZA取扱がある作品を先に表示し、新規会員登録（1件1,800円）獲得を狙う
 export async function getGameRankingWorks(limit = 20): Promise<DbWork[]> {
   const works = await getWorks();
   const available = filterAvailable(works).filter(
@@ -195,25 +212,25 @@ export async function getGameRankingWorks(limit = 20): Promise<DbWork[]> {
       (w.dlsite_rank !== null || w.fanza_rank !== null),
   );
   const sorted = available.sort((a, b) => {
-    // DLsite優先: DLsiteランクがある作品を先に、その中でランク順
-    const aHasDlsite = a.dlsite_rank !== null;
-    const bHasDlsite = b.dlsite_rank !== null;
+    const aHasFanza = a.price_fanza !== null;
+    const bHasFanza = b.price_fanza !== null;
 
-    // 両方DLsiteあり → DLsiteランク順
-    if (aHasDlsite && bHasDlsite) {
-      if (a.dlsite_rank !== b.dlsite_rank) {
-        return (a.dlsite_rank || 9999) - (b.dlsite_rank || 9999);
-      }
+    // 片方だけ FANZA 取扱あり → FANZA ある方を優先
+    if (aHasFanza && !bHasFanza) return -1;
+    if (!aHasFanza && bHasFanza) return 1;
+
+    // 両方FANZAあり → FANZAランク優先（無ければ DLsite ランク）
+    if (aHasFanza && bHasFanza) {
+      const aRank = a.fanza_rank ?? a.dlsite_rank ?? 9999;
+      const bRank = b.fanza_rank ?? b.dlsite_rank ?? 9999;
+      if (aRank !== bRank) return aRank - bRank;
+    } else {
+      // 両方FANZAなし（DLsiteのみ） → DLsiteランク順
+      const aRank = a.dlsite_rank ?? 9999;
+      const bRank = b.dlsite_rank ?? 9999;
+      if (aRank !== bRank) return aRank - bRank;
     }
-    // 片方だけDLsiteあり → DLsiteある方を優先
-    if (aHasDlsite && !bHasDlsite) return -1;
-    if (!aHasDlsite && bHasDlsite) return 1;
-    // 両方FANZAのみ → FANZAランク順
-    if (!aHasDlsite && !bHasDlsite) {
-      if (a.fanza_rank !== b.fanza_rank) {
-        return (a.fanza_rank || 9999) - (b.fanza_rank || 9999);
-      }
-    }
+
     // 同ランクなら新しい順
     const dateA = a.release_date || "";
     const dateB = b.release_date || "";
@@ -240,6 +257,9 @@ export async function getHighRatedWorks(
     const reviewsA = (a.review_count_dlsite || 0) + (a.review_count_fanza || 0);
     const reviewsB = (b.review_count_dlsite || 0) + (b.review_count_fanza || 0);
     if (reviewsA !== reviewsB) return reviewsB - reviewsA;
+    // 評価/レビュー数同点なら FANZA 取扱作品を優先（新規会員登録獲得目的）
+    const fanzaTie = fanzaPriorityTiebreak(a, b);
+    if (fanzaTie !== 0) return fanzaTie;
     const dateA = a.release_date || "";
     const dateB = b.release_date || "";
     return dateB.localeCompare(dateA);
@@ -362,7 +382,8 @@ export async function getWorksByActor(actorName: string): Promise<DbWork[]> {
   const sorted = available.sort((a, b) => {
     const dateA = a.release_date || "";
     const dateB = b.release_date || "";
-    return dateB.localeCompare(dateA);
+    if (dateA !== dateB) return dateB.localeCompare(dateA);
+    return fanzaPriorityTiebreak(a, b);
   });
   return enrichWorksWithCircleName(sorted);
 }
@@ -395,7 +416,8 @@ export async function getWorksByTag(tagName: string): Promise<DbWork[]> {
   const sorted = available.sort((a, b) => {
     const dateA = a.release_date || "";
     const dateB = b.release_date || "";
-    return dateB.localeCompare(dateA);
+    if (dateA !== dateB) return dateB.localeCompare(dateA);
+    return fanzaPriorityTiebreak(a, b);
   });
   return enrichWorksWithCircleName(sorted);
 }

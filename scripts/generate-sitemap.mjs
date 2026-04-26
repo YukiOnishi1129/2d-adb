@@ -20,6 +20,16 @@ function loadJson(filename) {
   return JSON.parse(readFileSync(path, "utf-8"));
 }
 
+function escapeXml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 async function main() {
   console.log("Loading data from prebuild cache...");
 
@@ -93,13 +103,27 @@ async function main() {
     </url>`);
   }
 
-  // 作品ページ
+  // 作品ページ（サムネ画像を <image:image> で含めて画像検索からの流入を狙う）
+  const workMap = new Map();
+  for (const w of availableWorks) {
+    workMap.set(w.id, { thumbnail_url: w.thumbnail_url, title: w.title });
+  }
+
   for (const id of workIds) {
+    const w = workMap.get(id) || {};
+    let imageBlock = "";
+    if (w.thumbnail_url) {
+      imageBlock = `
+      <image:image>
+        <image:loc>${escapeXml(w.thumbnail_url)}</image:loc>
+        <image:title>${escapeXml(w.title || "")}</image:title>
+      </image:image>`;
+    }
     urls.push(`
     <url>
       <loc>${BASE_URL}/works/${id}/</loc>
       <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
+      <priority>0.8</priority>${imageBlock}
     </url>`);
   }
 
@@ -133,8 +157,10 @@ async function main() {
     </url>`);
   }
 
+  // image namespace を追加（画像サイトマップ機能）
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.join("")}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">${urls.join("")}
 </urlset>
 `;
 

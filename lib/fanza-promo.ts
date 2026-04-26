@@ -7,6 +7,19 @@ const FANZA_COUPON_LANDING_URL =
   "https://www.dmm.co.jp/dc/doujin/-/special/coupon/";
 const MIN_PURCHASE_AMOUNT = 301;
 
+// 2d-adb サイト全体で使う FANZA アフィリエイト ID（無料会員登録CTA用）
+const FANZA_AFFILIATE_ID = "monodata-990";
+
+/**
+ * トップページなど作品依存しない場所で使う「FANZA同人 無料会員登録CTA」用のURL。
+ * 戦略: 新規会員登録 1件 = 1,800円 のサービス新規報酬を狙う。
+ * 既存の作品ページ初回クーポン（getFanzaInitialDiscount）と異なり、
+ * 作品に紐づかない汎用ランディングへの遷移用。
+ */
+export function getFanzaSignupCtaUrl(): string {
+  return `https://al.fanza.co.jp/?lurl=${encodeURIComponent(FANZA_COUPON_LANDING_URL)}&af_id=${FANZA_AFFILIATE_ID}&ch=toolbar&ch_id=link`;
+}
+
 const FANZA_DOUJIN_PATH_PATTERN = /\/dc\/doujin\/-\/detail\//;
 
 const EXCLUSION_KEYWORDS = ["BL", "TL", "乙女", "ボーイズラブ"];

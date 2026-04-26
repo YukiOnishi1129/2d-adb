@@ -3,6 +3,12 @@ import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+export const metadata = {
+  title: "ページが見つかりません",
+  description: "お探しのページは存在しないか、移動した可能性があります。トップページや人気作品から探してください。",
+  robots: { index: false, follow: true },
+};
+
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
