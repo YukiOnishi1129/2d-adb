@@ -85,33 +85,19 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p ${SSH_PORT} ${SSH_HOST} >> ~/.ssh/known_hosts
 
-      - name: Deploy via rsync (with retry)
+      - name: Deploy via rsync
         id: deploy
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
-          MAX_ATTEMPTS=3
-          for i in $(seq 1 $MAX_ATTEMPTS); do
-            echo "=== Deploy attempt $i/$MAX_ATTEMPTS ==="
-            if rsync -av --delete \
-                --timeout=300 \
-                --partial \
-                --partial-dir=.rsync-partial \
-                --exclude 'api/' \
-                --exclude '.rsync-partial' \
-                -e "ssh -p ${SSH_PORT} -o ServerAliveInterval=15 -o ServerAliveCountMax=20 -o ConnectTimeout=30" \
-                ./out/ \
-                ${SSH_USERNAME}@${SSH_HOST}:~/2d-adb.com/public_html/; then
-              echo "✅ Deploy succeeded on attempt $i"
-              exit 0
-            fi
-            echo "⚠️ Attempt $i failed, retrying in 30s..."
-            sleep 30
-          done
-          echo "❌ All $MAX_ATTEMPTS attempts failed"
-          exit 1
+          rsync -av --delete \
+            --timeout=300 \
+            --exclude 'api/' \
+            -e "ssh -p ${SSH_PORT} -o ServerAliveInterval=15 -o ServerAliveCountMax=20" \
+            ./out/ \
+            ${SSH_USERNAME}@${SSH_HOST}:~/2d-adb.com/public_html/
 
       - name: Calculate duration
         if: ${{ always() }}
