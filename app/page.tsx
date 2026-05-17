@@ -1,5 +1,6 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { LastUpdated } from "@/components/last-updated";
 import { HeroSaleBanner } from "@/components/hero-sale-banner";
 import { CampaignBanner } from "@/components/campaign-banner";
 import { isDoujinFestivalActive, getDoujinFestivalAffiliateUrl, CAMPAIGN_END_ISO as DOUJIN_FESTIVAL_END } from "@/lib/doujin-festival-campaign";
@@ -106,6 +107,14 @@ export default async function Home() {
       <Header />
 
       <main className="mx-auto max-w-7xl px-6 py-4">
+        {/* SEO用 h1（視覚的には控えめ、検索エンジン向けのメインテーマ宣言） */}
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h1 className="text-sm font-medium text-muted-foreground sm:text-base">
+            2D-ADB | 同人ASMR・同人ゲーム特化レビューサイト
+          </h1>
+          <LastUpdated variant="card" />
+        </div>
+
         {/* FANZA春の同人祭バナー（〜2026/05/18 11:59まで） */}
         {isDoujinFestivalActive() && (
           <CampaignBanner

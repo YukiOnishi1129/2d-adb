@@ -2,6 +2,8 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SisterSiteBanner } from "@/components/sister-site-banner";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { LastUpdated } from "@/components/last-updated";
+import { EditorialCredit } from "@/components/editorial-credit";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -468,14 +470,17 @@ export default async function FeaturePage({
       <Header />
 
       <main className="mx-auto max-w-3xl px-4 py-4">
-        {/* パンくずリスト */}
-        <Breadcrumb
-          items={[
-            { label: "ホーム", href: "/" },
-            { label: "特集一覧", href: "/feature" },
-            { label: `${feature.name}特集` },
-          ]}
-        />
+        {/* パンくずリスト + 最終更新日 */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <Breadcrumb
+            items={[
+              { label: "ホーム", href: "/" },
+              { label: "特集一覧", href: "/feature" },
+              { label: `${feature.name}特集` },
+            ]}
+          />
+          <LastUpdated variant="card" />
+        </div>
 
         {/* ページヘッダー */}
         <div className="mb-6">
@@ -618,6 +623,7 @@ export default async function FeaturePage({
         </section>
 
         {/* 姉妹サイトバナー */}
+        <EditorialCredit variant="feature" />
         <SisterSiteBanner />
       </main>
 

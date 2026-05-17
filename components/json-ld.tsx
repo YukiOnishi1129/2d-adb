@@ -175,3 +175,64 @@ export function FaqJsonLd({ items }: FaqJsonLdProps) {
     />
   );
 }
+
+// =============================================================================
+// Organization JSON-LD（サイト全体の運営主体を Google / AI に伝える）
+// =============================================================================
+// SEO目的:
+// - E-E-A-T の「権威性・信頼性」を構造化データとして提示
+// - AI（AIによる概要 / AIモード）への引用時の責任主体識別
+// - 匿名アフィリエイトサイトとの差別化
+//
+// root layout で1度だけ出力すれば全ページに反映される
+export function OrganizationJsonLd() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "2D-ADB",
+    alternateName: "2D-ADB編集部",
+    url: "https://2d-adb.com",
+    logo: "https://2d-adb.com/ogp/recommendation_ogp.png",
+    description:
+      "ASMR・同人音声・同人ゲームの厳選作品レビューサイト。評価・ランキング・セール情報をAIによる分析と人手の編集で整理してお届けします。",
+    sameAs: [
+      "https://x.com/2d_adb",
+    ],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
+// =============================================================================
+// WebSite JSON-LD（サイト内検索のサジェスト + サイト名統一）
+// =============================================================================
+export function WebSiteJsonLd() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "2D-ADB",
+    alternateName: "2D-ADB | ASMR・同人音声の厳選おすすめ作品",
+    url: "https://2d-adb.com",
+    inLanguage: "ja",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: "https://2d-adb.com/search?q={search_term_string}",
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}

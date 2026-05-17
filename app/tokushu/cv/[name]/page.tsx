@@ -3,6 +3,8 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SisterSiteBanner } from "@/components/sister-site-banner";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { LastUpdated } from "@/components/last-updated";
+import { EditorialCredit } from "@/components/editorial-credit";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -377,13 +379,16 @@ export default async function CVTokushuPage({ params }: Props) {
       <Header />
 
       <main className="mx-auto max-w-3xl px-4 py-4">
-        <Breadcrumb
-          items={[
-            { label: "トップ", href: "/" },
-            { label: "声優特集", href: "/tokushu/cv" },
-            { label: feature.name },
-          ]}
-        />
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <Breadcrumb
+            items={[
+              { label: "トップ", href: "/" },
+              { label: "声優特集", href: "/tokushu/cv" },
+              { label: feature.name },
+            ]}
+          />
+          <LastUpdated variant="card" />
+        </div>
 
         {/* ヘッダー */}
         <div className="mb-6 mt-4">
@@ -583,6 +588,7 @@ export default async function CVTokushuPage({ params }: Props) {
         </section>
 
         {/* 姉妹サイトバナー */}
+        <EditorialCredit variant="feature" />
         <SisterSiteBanner />
       </main>
 

@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AgeGate } from "@/components/age-gate";
 import { MobileNav } from "@/components/mobile-nav";
+import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/json-ld";
 import "./globals.css";
 
 const GA_MEASUREMENT_ID = "G-JS5JN6JFRZ";
@@ -95,6 +96,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* サイト全体の構造化データ（Organization / WebSite）
+            E-E-A-T の権威性・信頼性を Google / AI に伝える */}
+        <OrganizationJsonLd />
+        <WebSiteJsonLd />
         <AgeGate />
         {children}
         <MobileNav />

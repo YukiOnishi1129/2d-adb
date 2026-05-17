@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { LastUpdated } from "@/components/last-updated";
+import { EditorialCredit } from "@/components/editorial-credit";
 import { PageHeaderCard } from "@/components/page-header-card";
 import { WorkGridWithLoadMore } from "@/components/work-grid-with-load-more";
 import { Badge } from "@/components/ui/badge";
@@ -81,13 +83,16 @@ export default async function CircleDetailPage({ params }: Props) {
       <Header />
 
       <main className="mx-auto max-w-5xl px-4 py-8">
-        <Breadcrumb
-          items={[
-            { label: "トップ", href: "/" },
-            { label: "サークル", href: "/circles" },
-            { label: circle.name },
-          ]}
-        />
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <Breadcrumb
+            items={[
+              { label: "トップ", href: "/" },
+              { label: "サークル", href: "/circles" },
+              { label: circle.name },
+            ]}
+          />
+          <LastUpdated variant="card" />
+        </div>
 
         <PageHeaderCard title={circle.name}>
           <div className="flex flex-wrap items-center gap-4 text-sm">
@@ -147,6 +152,8 @@ export default async function CircleDetailPage({ params }: Props) {
             このサークルの作品はまだ登録されていません。
           </p>
         )}
+
+        <EditorialCredit />
       </main>
 
       <Footer />

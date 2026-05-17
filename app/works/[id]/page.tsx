@@ -4,6 +4,8 @@ import { Footer } from "@/components/footer";
 import { SisterSiteBanner } from "@/components/sister-site-banner";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { ProductJsonLd, ReviewJsonLd, BreadcrumbJsonLd, FaqJsonLd } from "@/components/json-ld";
+import { LastUpdated } from "@/components/last-updated";
+import { EditorialCredit } from "@/components/editorial-credit";
 import { buildWorkFaq } from "@/lib/work-faq";
 import { SaleTimer } from "@/components/sale-timer";
 import { SaleBannerCountdown } from "@/components/sale-banner-countdown";
@@ -307,7 +309,10 @@ export default async function WorkDetailPage({ params }: Props) {
       )}
 
       <main className="mx-auto max-w-5xl px-4 py-8">
-        <Breadcrumb items={breadcrumbItems} />
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <Breadcrumb items={breadcrumbItems} />
+          <LastUpdated variant="card" />
+        </div>
 
         {/* ヒーローセクション: メイン画像（sample_images[0]を優先、なければthumbnail） */}
         <div className="relative mb-6 overflow-hidden rounded-lg">
@@ -1298,6 +1303,9 @@ export default async function WorkDetailPage({ params }: Props) {
             </section>
           )}
         </div>
+
+        {/* 編集責任主体明示（E-E-A-T） */}
+        <EditorialCredit variant="work" />
 
         {/* 姉妹サイトバナー */}
         <SisterSiteBanner />
