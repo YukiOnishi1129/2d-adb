@@ -4,6 +4,7 @@ import { Footer } from "@/components/footer";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { LastUpdated } from "@/components/last-updated";
 import { EditorialCredit } from "@/components/editorial-credit";
+import { PersonJsonLd } from "@/components/json-ld";
 import { PageHeaderCard } from "@/components/page-header-card";
 import { WorkGridWithLoadMore } from "@/components/work-grid-with-load-more";
 import { Badge } from "@/components/ui/badge";
@@ -32,8 +33,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${decodedName}の出演作品おすすめ・レビュー（${dbWorks.length}作品） | 2D-ADB`;
-  const description = `${decodedName}出演のASMR・同人音声・同人ゲーム${dbWorks.length}作品のレビュー・感想まとめ。人気作品やセール情報もチェック！`;
+  // セール中件数を集計（タイトル訴求素材）
+  const saleCount = dbWorks.filter(
+    (w) => (w.discount_rate_dlsite ?? 0) > 0 || (w.discount_rate_fanza ?? 0) > 0,
+  ).length;
+  const year = new Date().getFullYear();
+  const saleBadge = saleCount > 0 ? `【${saleCount}作品セール中】` : "";
+
+  // クリック誘導タイトル: 【YYYY年最新】{声優}のおすすめASMR・同人音声 N選｜出演作品レビュー
+  const title = `${saleBadge}【${year}年最新】${decodedName}のおすすめASMR・同人音声${dbWorks.length}選｜出演作品レビュー | 2D-ADB`;
+  const description = `声優「${decodedName}」が出演するASMR・同人音声・同人ゲーム${dbWorks.length}作品を2D-ADB編集部がレビュー。人気作・新作・セール作品をまとめてチェック。${saleCount > 0 ? `現在${saleCount}作品がセール中。` : ""}DLsite・FANZAで購入可能。`;
 
   return {
     title,
@@ -88,8 +97,35 @@ export default async function CVDetailPage({ params }: Props) {
   const limitedDbWorks = dbWorks.slice(0, MAX_SSG_WORKS);
   const works = limitedDbWorks.map(dbWorkToWork);
 
+  // Person JSON-LD 用: 出演作品の平均評価（DLsite/FANZAの高い方を採用）
+  const ratings = dbWorks
+    .map((w) => Math.max(w.rating_dlsite ?? 0, w.rating_fanza ?? 0))
+    .filter((r) => r > 0);
+  const avgRating =
+    ratings.length > 0
+      ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+      : null;
+
+  // 代表作のサムネ（最も評価が高い作品を採用）
+  const topWork = [...dbWorks]
+    .sort(
+      (a, b) =>
+        Math.max(b.rating_dlsite ?? 0, b.rating_fanza ?? 0) -
+        Math.max(a.rating_dlsite ?? 0, a.rating_fanza ?? 0),
+    )[0];
+  const thumbnailUrl = topWork?.thumbnail_url ?? null;
+
+  const pageUrl = `https://2d-adb.com/cv/${name}/`;
+
   return (
     <div className="min-h-screen bg-background">
+      <PersonJsonLd
+        name={decodedName}
+        workCount={totalCount}
+        avgRating={avgRating}
+        thumbnailUrl={thumbnailUrl}
+        pageUrl={pageUrl}
+      />
       <Header />
 
       <main className="mx-auto max-w-5xl px-4 py-8">

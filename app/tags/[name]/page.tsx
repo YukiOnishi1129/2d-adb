@@ -32,8 +32,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `「${decodedName}」おすすめ作品・レビュー（${dbWorks.length}作品） | 2D-ADB`;
-  const description = `「${decodedName}」のASMR・同人音声・同人ゲーム${dbWorks.length}作品のレビュー・感想まとめ。おすすめ作品を簡単に探せます！`;
+  const saleCount = dbWorks.filter(
+    (w) => (w.discount_rate_dlsite ?? 0) > 0 || (w.discount_rate_fanza ?? 0) > 0,
+  ).length;
+  const year = new Date().getFullYear();
+  const saleBadge = saleCount > 0 ? `【${saleCount}作品セール中】` : "";
+
+  // クリック誘導タイトル: 【YYYY年最新】{タグ}ジャンルのおすすめ同人音声・ASMR N選｜2D-ADB
+  const title = `${saleBadge}【${year}年最新】「${decodedName}」のおすすめ同人音声・ASMR・ゲーム${dbWorks.length}選｜2D-ADB`;
+  const description = `「${decodedName}」タグが付いたASMR・同人音声・同人ゲーム${dbWorks.length}作品を2D-ADB編集部がレビュー。人気作・新作・セール作品をまとめてチェック。${saleCount > 0 ? `現在${saleCount}作品がセール中。` : ""}DLsite・FANZAで購入可能。`;
 
   return {
     title,

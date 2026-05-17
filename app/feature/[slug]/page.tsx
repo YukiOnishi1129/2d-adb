@@ -4,6 +4,7 @@ import { SisterSiteBanner } from "@/components/sister-site-banner";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { LastUpdated } from "@/components/last-updated";
 import { EditorialCredit } from "@/components/editorial-credit";
+import { ArticleJsonLd } from "@/components/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -456,9 +457,23 @@ export default async function FeaturePage({
     ],
   };
 
+  const year = new Date().getFullYear();
+  const articleHeadline = `【${year}年】${feature.name}ASMRおすすめ${allWorks.length}選｜同人音声・ゲーム厳選`;
+  const articleDescription = feature.headline
+    ? `${feature.name}好きにおすすめの${allWorks.length}作品を厳選。${feature.headline}`
+    : `${feature.name}好きにおすすめのASMR・同人音声・同人ゲーム${allWorks.length}作品を2D-ADB編集部が厳選。`;
+  const articleUrl = `https://2d-adb.com/feature/${slug}/`;
+
   return (
     <div className="min-h-screen bg-background">
       {/* 構造化データ */}
+      <ArticleJsonLd
+        headline={articleHeadline}
+        description={articleDescription}
+        url={articleUrl}
+        imageUrl={feature.thumbnail_url}
+        datePublished={feature.updated_at}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}

@@ -5,6 +5,7 @@ import { SisterSiteBanner } from "@/components/sister-site-banner";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { LastUpdated } from "@/components/last-updated";
 import { EditorialCredit } from "@/components/editorial-credit";
+import { ArticleJsonLd } from "@/components/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -69,8 +70,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "声優特集 | 2D-ADB" };
   }
 
-  const title = `${feature.name}特集 - おすすめASMRレビュー厳選${feature.recommended_works?.length || 0}作品 | 2D-ADB`;
-  const description = feature.description || `${feature.name}の人気ASMR作品をレビュー・厳選。迷ったらここから選べばハズレなし。`;
+  const year = new Date().getFullYear();
+  const recCount = feature.recommended_works?.length || 0;
+  const saleCount = feature.sale_count || 0;
+  const saleBadge = saleCount > 0 ? `【${saleCount}作品セール中】` : "";
+
+  // クリック誘導タイトル: 【YYYY年最新】{声優}の厳選おすすめASMR N選｜編集部レビュー
+  const title = `${saleBadge}【${year}年最新】${feature.name}の厳選おすすめASMR${recCount}選｜編集部レビュー | 2D-ADB`;
+  const description = feature.description || `声優「${feature.name}」のASMR・同人音声から${recCount}作品を2D-ADB編集部が厳選レビュー。${saleCount > 0 ? `現在${saleCount}作品がセール中。` : ""}迷ったらここから選べばハズレなし。`;
   const ogImage = feature.representative_thumbnail_url || undefined;
   const keywords = [
     feature.name,
@@ -374,8 +381,24 @@ export default async function CVTokushuPage({ params }: Props) {
     return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
   };
 
+  const year = new Date().getFullYear();
+  const totalFeatureWorks =
+    recommendedWorks.length + saleWorks.length + newWorks.length;
+  const articleHeadline = `【${year}年】${feature.name}のおすすめASMR・同人音声${totalFeatureWorks}選`;
+  const articleDescription = feature.headline
+    ? `声優「${feature.name}」のおすすめ作品${totalFeatureWorks}選。${feature.headline}`
+    : `声優「${feature.name}」が出演するASMR・同人音声・同人ゲームから${totalFeatureWorks}作品を2D-ADB編集部が厳選。`;
+  const articleUrl = `https://2d-adb.com/tokushu/cv/${name}/`;
+
   return (
     <div className="min-h-screen bg-background">
+      <ArticleJsonLd
+        headline={articleHeadline}
+        description={articleDescription}
+        url={articleUrl}
+        imageUrl={feature.representative_thumbnail_url}
+        datePublished={feature.updated_at}
+      />
       <Header />
 
       <main className="mx-auto max-w-3xl px-4 py-4">

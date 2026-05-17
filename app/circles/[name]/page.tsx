@@ -4,6 +4,7 @@ import { Footer } from "@/components/footer";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { LastUpdated } from "@/components/last-updated";
 import { EditorialCredit } from "@/components/editorial-credit";
+import { CircleOrganizationJsonLd } from "@/components/json-ld";
 import { PageHeaderCard } from "@/components/page-header-card";
 import { WorkGridWithLoadMore } from "@/components/work-grid-with-load-more";
 import { Badge } from "@/components/ui/badge";
@@ -30,9 +31,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const genreText = dbCircle.main_genre ? `（${dbCircle.main_genre}）` : "";
-  const title = `${decodedName}${genreText}のおすすめ作品・レビュー（${dbWorks.length}作品） | 2D-ADB`;
-  const description = `サークル「${decodedName}」のASMR・同人音声・同人ゲーム${dbWorks.length}作品のレビュー・感想まとめ。最新作品やセール情報をチェック！`;
+  const genreText = dbCircle.main_genre ? `【${dbCircle.main_genre}】` : "";
+  const saleCount = dbWorks.filter(
+    (w) => (w.discount_rate_dlsite ?? 0) > 0 || (w.discount_rate_fanza ?? 0) > 0,
+  ).length;
+  const year = new Date().getFullYear();
+  const saleBadge = saleCount > 0 ? `【${saleCount}作品セール中】` : "";
+
+  // クリック誘導タイトル: 【YYYY年】サークル{name}のおすすめASMR N選｜代表作・新作レビュー
+  const title = `${saleBadge}【${year}年】${genreText}サークル「${decodedName}」のおすすめ作品${dbWorks.length}選｜代表作・新作レビュー | 2D-ADB`;
+  const description = `同人サークル「${decodedName}」${dbCircle.main_genre ? `（${dbCircle.main_genre}）` : ""}のASMR・同人音声・同人ゲーム${dbWorks.length}作品を2D-ADB編集部がレビュー。代表作・新作・人気作・セール作品をまとめてチェック。${saleCount > 0 ? `現在${saleCount}作品がセール中。` : ""}`;
 
   return {
     title,
@@ -78,8 +86,16 @@ export default async function CircleDetailPage({ params }: Props) {
   const limitedDbWorks = dbWorks.slice(0, MAX_SSG_WORKS);
   const works = limitedDbWorks.map(dbWorkToWork);
 
+  const pageUrl = `https://2d-adb.com/circles/${name}/`;
+
   return (
     <div className="min-h-screen bg-background">
+      <CircleOrganizationJsonLd
+        name={circle.name}
+        workCount={totalCount}
+        mainGenre={circle.mainGenre}
+        pageUrl={pageUrl}
+      />
       <Header />
 
       <main className="mx-auto max-w-5xl px-4 py-8">

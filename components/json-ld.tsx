@@ -236,3 +236,180 @@ export function WebSiteJsonLd() {
     />
   );
 }
+
+// =============================================================================
+// Person JSON-LD（声優ページ用）
+// =============================================================================
+// SEO目的:
+// - 声優を「人物エンティティ」として Google / AI に明示
+// - 声優名でのナレッジパネル候補化、AIモード引用時の精度向上
+// - E-E-A-T の「専門性」を声優単位で表現
+interface PersonJsonLdProps {
+  name: string;
+  /** 出演作品数 */
+  workCount: number;
+  /** 平均評価（1-5） */
+  avgRating?: number | null;
+  /** 代表作のサムネURL（OG画像兼）。null可 */
+  thumbnailUrl?: string | null;
+  /** 声優プロフィールページURL（絶対URL推奨） */
+  pageUrl: string;
+}
+
+export function PersonJsonLd({
+  name,
+  workCount,
+  avgRating,
+  thumbnailUrl,
+  pageUrl,
+}: PersonJsonLdProps) {
+  const description = `同人ASMR・同人音声・同人ゲーム作品に出演する声優「${name}」の出演作品${workCount}件をまとめたページ。レビュー・評価・人気作・セール情報を2D-ADB編集部が整理しています。`;
+
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name,
+    url: pageUrl,
+    description,
+    jobTitle: "声優",
+    knowsAbout: ["ASMR", "同人音声", "ボイス作品"],
+  };
+
+  if (thumbnailUrl) {
+    jsonLd.image = thumbnailUrl;
+  }
+
+  // 出演実績を Person.performerIn ではなく aggregateRating として
+  // 「この人物の出演作品の平均評価」を一段足す形で表現
+  if (avgRating && avgRating > 0) {
+    jsonLd.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: avgRating.toFixed(2),
+      reviewCount: workCount,
+      bestRating: 5,
+      worstRating: 1,
+    };
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
+// =============================================================================
+// Circle (Organization) JSON-LD（サークルページ用）
+// =============================================================================
+// SEO目的:
+// - サークルを「組織エンティティ」として明示
+// - サークル名で検索した際の Knowledge 候補化
+interface CircleOrganizationJsonLdProps {
+  name: string;
+  /** 作品数 */
+  workCount: number;
+  /** メインジャンル（ASMR / ゲーム など） */
+  mainGenre?: string | null;
+  pageUrl: string;
+}
+
+export function CircleOrganizationJsonLd({
+  name,
+  workCount,
+  mainGenre,
+  pageUrl,
+}: CircleOrganizationJsonLdProps) {
+  const genreText = mainGenre ? `（${mainGenre}）` : "";
+  const description = `同人サークル「${name}」${genreText}の作品${workCount}件をまとめたページ。サークルの代表作・人気作・セール情報を2D-ADB編集部が整理しています。`;
+
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name,
+    url: pageUrl,
+    description,
+    // 同人サークルなので、より具体的な type を additionalType で示す
+    additionalType: "https://schema.org/CreativeWork",
+  };
+
+  if (mainGenre) {
+    jsonLd.knowsAbout = [mainGenre, "同人作品"];
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
+// =============================================================================
+// Article JSON-LD（特集ページ用 / 編集部記事として明示）
+// =============================================================================
+// SEO目的:
+// - 特集ページを「編集記事」として Google / AI に伝える
+// - E-E-A-T の「経験・専門性」を author 経由で表現
+// - AIモードで「○○の特集記事を探して」のような検索に引っかかりやすくする
+interface ArticleJsonLdProps {
+  /** 記事タイトル（headline）。SEOガイドの推奨は110文字以内 */
+  headline: string;
+  /** 記事の要約 */
+  description: string;
+  /** 記事のURL（絶対URL推奨） */
+  url: string;
+  /** OG画像（記事のサムネ） */
+  imageUrl?: string | null;
+  /** 記事の発行日（ISO 8601）。未指定ならビルド時刻 */
+  datePublished?: string;
+}
+
+export function ArticleJsonLd({
+  headline,
+  description,
+  url,
+  imageUrl,
+  datePublished,
+}: ArticleJsonLdProps) {
+  const buildDate = getBuildDateIso();
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: headline.slice(0, 110),
+    description,
+    url,
+    inLanguage: "ja",
+    datePublished: datePublished ?? buildDate,
+    dateModified: buildDate,
+    author: {
+      "@type": "Organization",
+      name: "2D-ADB編集部",
+      url: "https://2d-adb.com/editorial/",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "2D-ADB",
+      url: "https://2d-adb.com",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://2d-adb.com/ogp/recommendation_ogp.png",
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": url,
+    },
+  };
+
+  if (imageUrl) {
+    jsonLd.image = imageUrl;
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
