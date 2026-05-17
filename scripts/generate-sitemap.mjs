@@ -92,7 +92,7 @@ async function main() {
     { path: "/recommendations/", priority: "0.8", changefreq: "daily" },
     { path: "/tokushu/", priority: "0.8", changefreq: "daily" },
     { path: "/tokushu/cv/", priority: "0.7", changefreq: "weekly" },
-    { path: "/search/", priority: "0.7", changefreq: "weekly" },
+    // /search/ は robots.txt で Disallow しているのでサイトマップにも含めない
     { path: "/cv/", priority: "0.7", changefreq: "weekly" },
     { path: "/tags/", priority: "0.7", changefreq: "weekly" },
     { path: "/circles/", priority: "0.7", changefreq: "weekly" },
