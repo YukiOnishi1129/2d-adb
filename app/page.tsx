@@ -1,6 +1,7 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { LastUpdated } from "@/components/last-updated";
+import { PurposeNavigation } from "@/components/purpose-navigation";
 import { HeroSaleBanner } from "@/components/hero-sale-banner";
 import { CampaignBanner } from "@/components/campaign-banner";
 import { isDoujinFestivalActive, getDoujinFestivalAffiliateUrl, CAMPAIGN_END_ISO as DOUJIN_FESTIVAL_END } from "@/lib/doujin-festival-campaign";
@@ -156,6 +157,9 @@ export default async function Home() {
           features={features}
           voiceActorFeatures={voiceActorFeatures}
         />
+
+        {/* 目的別ナビゲーション（お困りごと別ご案内、SEO本【3】トップページ順位UP施策） */}
+        <PurposeNavigation />
 
         {/* トレンドチップ（コンパクト） */}
         <TrendingChips actors={actors} tags={tags} />
