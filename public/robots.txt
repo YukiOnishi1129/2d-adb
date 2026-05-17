@@ -2,5 +2,9 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /privacy
+# 検索ページ（クエリ違いで無限に重複URLが発生し得るため、クロール自体を抑制）
+Disallow: /search
+Disallow: /search/
+Disallow: /search?
 
 Sitemap: https://2d-adb.com/sitemap.xml

@@ -181,8 +181,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         images: [
           {
             url: ogImage,
-            width: 800,
-            height: 450,
+            // og:image は 1200x630 が推奨（Facebook / X Card 共通）
+            // 元画像が実際にこのサイズかは保証されないが、width/height は宣言値で OK
+            width: 1200,
+            height: 630,
             alt: work.title,
           },
         ],

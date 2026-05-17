@@ -115,5 +115,71 @@ export function buildWorkFaq(work: Work): FaqItem[] {
     });
   }
 
+  // 7. こんな人におすすめ（AI生成の ai_target_audience を活用）
+  if (work.aiTargetAudience) {
+    faq.push({
+      question: `「${work.title}」はどんな人におすすめですか？`,
+      answer: work.aiTargetAudience,
+    });
+  }
+
+  // 8. 注意点・地雷ポイント（AI生成の ai_warnings を活用）
+  if (work.aiWarnings) {
+    faq.push({
+      question: `「${work.title}」を購入する際の注意点はありますか？`,
+      answer: work.aiWarnings,
+    });
+  }
+
+  // 9. 収録時間 / プレイ時間（ASMR / ゲーム別）
+  const durationMinutes = work.killerWords?.durationMinutes;
+  const playTimeHours = work.killerWords?.playTimeHours;
+  if (durationMinutes && durationMinutes > 0) {
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+    const durationText =
+      hours > 0
+        ? `約${hours}時間${minutes > 0 ? `${minutes}分` : ""}`
+        : `${minutes}分`;
+    faq.push({
+      question: `「${work.title}」の収録時間はどれくらいですか？`,
+      answer: `本作品の収録時間は${durationText}です。`,
+    });
+  } else if (playTimeHours && playTimeHours > 0) {
+    faq.push({
+      question: `「${work.title}」のプレイ時間はどれくらいですか？`,
+      answer: `本作品の想定プレイ時間は約${playTimeHours}時間です。`,
+    });
+  }
+
+  // 10. CG / シーン情報（ゲーム作品向け）
+  const cgCount = work.killerWords?.cgCount;
+  const cgDiffCount = work.killerWords?.cgDiffCount;
+  const hSceneCount = work.killerWords?.hSceneCount;
+  if (cgCount && cgCount > 0) {
+    const cgPart = cgDiffCount
+      ? `基本CG${cgCount}枚、差分込み${cgDiffCount}枚`
+      : `CG${cgCount}枚`;
+    const hScenePart = hSceneCount ? `、Hシーン${hSceneCount}個` : "";
+    faq.push({
+      question: `「${work.title}」のCG枚数・シーン数は？`,
+      answer: `本作品には${cgPart}${hScenePart}が収録されています。`,
+    });
+  }
+
+  // 11. 同じ声優・同じサークルで他の作品はある？（内部リンク誘導）
+  if (work.actors && work.actors.length > 0) {
+    const mainActor = work.actors[0];
+    faq.push({
+      question: `「${mainActor}」さんが出演する他の作品は？`,
+      answer: `2D-ADBでは「${mainActor}」さんが出演する他の同人ASMR・同人音声・同人ゲーム作品もまとめて紹介しています。声優ページでチェックできます。`,
+    });
+  } else if (work.circleName) {
+    faq.push({
+      question: `「${work.circleName}」の他の作品は？`,
+      answer: `2D-ADBではサークル「${work.circleName}」の他の作品もまとめて紹介しています。サークルページからチェックできます。`,
+    });
+  }
+
   return faq;
 }
