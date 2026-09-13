@@ -30,6 +30,7 @@ import {
 } from "@/lib/db";
 import { dbWorkToWork } from "@/lib/types";
 import { getFanzaInitialDiscount } from "@/lib/fanza-promo";
+import { getPrimaryPlatform } from "@/lib/platform-priority";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -474,30 +475,13 @@ export default async function WorkDetailPage({ params }: Props) {
 
             {/* ファーストビュー大きなCTA */}
             {(() => {
-              const dlPrice = dlsiteFinalPrice || work.priceDlsite;
-              const fzPrice = fanzaFinalPrice || work.priceFanza;
-              // FANZA優先（同額ならFANZA）
-              let ctaPlatform: "dlsite" | "fanza" = "fanza";
-              let ctaUrl = work.fanzaUrl;
-              let ctaPrice = fzPrice;
-              let ctaOriginalPrice = work.priceFanza;
-              let ctaDiscountRate = work.discountRateFanza;
-
-              if (dlPrice && fzPrice) {
-                if (dlPrice < fzPrice) {
-                  ctaPlatform = "dlsite";
-                  ctaUrl = work.dlsiteUrl;
-                  ctaPrice = dlPrice;
-                  ctaOriginalPrice = work.priceDlsite;
-                  ctaDiscountRate = work.discountRateDlsite;
-                }
-              } else if (!fzPrice && dlPrice) {
-                ctaPlatform = "dlsite";
-                ctaUrl = work.dlsiteUrl;
-                ctaPrice = dlPrice;
-                ctaOriginalPrice = work.priceDlsite;
-                ctaDiscountRate = work.discountRateDlsite;
-              }
+              // 主役プラットフォームの判定は lib/platform-priority.ts に集約
+              const primary = getPrimaryPlatform(work);
+              const ctaPlatform = primary?.platform ?? "fanza";
+              const ctaUrl = primary?.url ?? null;
+              const ctaPrice = primary?.price ?? null;
+              const ctaOriginalPrice = primary?.originalPrice ?? null;
+              const ctaDiscountRate = primary?.discountRate ?? null;
 
               const isOnSale = ctaDiscountRate && ctaDiscountRate > 0;
               const rating = work.ratingDlsite || work.ratingFanza;
@@ -960,30 +944,13 @@ export default async function WorkDetailPage({ params }: Props) {
 
           {/* 大きなCTAセクション */}
           {(() => {
-            // FANZA優先（同額ならFANZA）
-            const dlPrice = dlsiteFinalPrice || work.priceDlsite;
-            const fzPrice = fanzaFinalPrice || work.priceFanza;
-            let ctaPlatform: "dlsite" | "fanza" = "fanza";
-            let ctaUrl = work.fanzaUrl;
-            let ctaPrice = fzPrice;
-            let ctaOriginalPrice = work.priceFanza;
-            let ctaDiscountRate = work.discountRateFanza;
-
-            if (dlPrice && fzPrice) {
-              if (dlPrice < fzPrice) {
-                ctaPlatform = "dlsite";
-                ctaUrl = work.dlsiteUrl;
-                ctaPrice = dlPrice;
-                ctaOriginalPrice = work.priceDlsite;
-                ctaDiscountRate = work.discountRateDlsite;
-              }
-            } else if (!fzPrice && dlPrice) {
-              ctaPlatform = "dlsite";
-              ctaUrl = work.dlsiteUrl;
-              ctaPrice = dlPrice;
-              ctaOriginalPrice = work.priceDlsite;
-              ctaDiscountRate = work.discountRateDlsite;
-            }
+            // 主役プラットフォームの判定は lib/platform-priority.ts に集約
+            const primary = getPrimaryPlatform(work);
+            const ctaPlatform = primary?.platform ?? "fanza";
+            const ctaUrl = primary?.url ?? null;
+            const ctaPrice = primary?.price ?? null;
+            const ctaOriginalPrice = primary?.originalPrice ?? null;
+            const ctaDiscountRate = primary?.discountRate ?? null;
 
             const isOnSale = ctaDiscountRate && ctaDiscountRate > 0;
             const rating = work.ratingDlsite || work.ratingFanza;

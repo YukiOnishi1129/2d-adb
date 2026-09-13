@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Image, Gamepad2 } from "lucide-react";
 import { getFanzaInitialDiscount } from "@/lib/fanza-promo";
+import { getPrimaryPlatform } from "@/lib/platform-priority";
 
 interface WorkCardProps {
   work: Work;
@@ -30,56 +31,21 @@ function getTimeRemaining(endDate: string): string {
   return `残り${hours}時間`;
 }
 
+// 主役プラットフォームの判定は詳細ページと共通（lib/platform-priority.ts）
 function getCheaperPlatform(work: Work): {
   platform: string;
   price: number;
   originalPrice: number;
   discountRate: number | null;
 } | null {
-  // セール価格を計算
-  const dlsiteOriginal = work.priceDlsite;
-  const fanzaOriginal = work.priceFanza;
-  const dlsitePrice =
-    work.priceDlsite && work.discountRateDlsite
-      ? Math.round(work.priceDlsite * (1 - work.discountRateDlsite / 100))
-      : work.priceDlsite;
-  const fanzaPrice =
-    work.priceFanza && work.discountRateFanza
-      ? Math.round(work.priceFanza * (1 - work.discountRateFanza / 100))
-      : work.priceFanza;
-
-  if (dlsitePrice && fanzaPrice) {
-    // FANZA優先（同額ならFANZA、FANZAが安い場合もFANZA）
-    if (fanzaPrice <= dlsitePrice) {
-      return {
-        platform: "FANZA",
-        price: fanzaPrice,
-        originalPrice: fanzaOriginal!,
-        discountRate: work.discountRateFanza,
-      };
-    }
-    return {
-      platform: "DLsite",
-      price: dlsitePrice,
-      originalPrice: dlsiteOriginal!,
-      discountRate: work.discountRateDlsite,
-    };
-  }
-  if (fanzaPrice && fanzaOriginal)
-    return {
-      platform: "FANZA",
-      price: fanzaPrice,
-      originalPrice: fanzaOriginal,
-      discountRate: work.discountRateFanza,
-    };
-  if (dlsitePrice && dlsiteOriginal)
-    return {
-      platform: "DLsite",
-      price: dlsitePrice,
-      originalPrice: dlsiteOriginal,
-      discountRate: work.discountRateDlsite,
-    };
-  return null;
+  const primary = getPrimaryPlatform(work);
+  if (!primary || !primary.price || !primary.originalPrice) return null;
+  return {
+    platform: primary.platform === "fanza" ? "FANZA" : "DLsite",
+    price: primary.price,
+    originalPrice: primary.originalPrice,
+    discountRate: primary.discountRate,
+  };
 }
 
 function getUnitPrice(work: Work): string | null {
