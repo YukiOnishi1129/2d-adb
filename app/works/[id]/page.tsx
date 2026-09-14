@@ -31,7 +31,7 @@ import {
 import { dbWorkToWork } from "@/lib/types";
 import { getFanzaInitialDiscount } from "@/lib/fanza-promo";
 import { getPrimaryPlatform } from "@/lib/platform-priority";
-import Link from "next/link";
+import { TrackedLink } from "@/components/tracked-link";
 import { notFound } from "next/navigation";
 
 interface Props {
@@ -452,12 +452,14 @@ export default async function WorkDetailPage({ params }: Props) {
             {/* サークル */}
             {work.circleName && (
               <p>
-                <Link
+                <TrackedLink
+                  linkType="circle"
+                  fromWorkId={work.id}
                   href={`/circles/${encodeURIComponent(work.circleName)}`}
                   className="text-accent hover:underline"
                 >
                   {work.circleName}
-                </Link>
+                </TrackedLink>
               </p>
             )}
 
@@ -466,9 +468,14 @@ export default async function WorkDetailPage({ params }: Props) {
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm text-muted-foreground">出演:</span>
                 {work.actors.map((actor) => (
-                  <Link key={actor} href={`/cv/${encodeURIComponent(actor)}`}>
+                  <TrackedLink
+                    key={actor}
+                    linkType="cv"
+                    fromWorkId={work.id}
+                    href={`/cv/${encodeURIComponent(actor)}`}
+                  >
                     <Badge variant="cv">{actor}</Badge>
-                  </Link>
+                  </TrackedLink>
                 ))}
               </div>
             )}
@@ -603,14 +610,19 @@ export default async function WorkDetailPage({ params }: Props) {
             {work.aiTags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {work.aiTags.map((tag) => (
-                  <Link key={tag} href={`/tags/${encodeURIComponent(tag)}`}>
+                  <TrackedLink
+                    key={tag}
+                    linkType="tag"
+                    fromWorkId={work.id}
+                    href={`/tags/${encodeURIComponent(tag)}`}
+                  >
                     <Badge
                       variant="tag"
                       className="cursor-pointer hover:opacity-80"
                     >
                       {tag}
                     </Badge>
-                  </Link>
+                  </TrackedLink>
                 ))}
               </div>
             )}
@@ -620,14 +632,19 @@ export default async function WorkDetailPage({ params }: Props) {
               <div className="flex flex-wrap gap-2 pt-2">
                 <span className="text-sm text-muted-foreground">関連特集:</span>
                 {matchedFeatures.map((feature) => (
-                  <Link key={feature.slug} href={`/feature/${feature.slug}`}>
+                  <TrackedLink
+                    key={feature.slug}
+                    linkType="feature"
+                    fromWorkId={work.id}
+                    href={`/feature/${feature.slug}`}
+                  >
                     <Badge
                       variant="outline"
                       className="cursor-pointer hover:bg-primary/10 border-primary/50 text-primary"
                     >
                       {feature.name}特集
                     </Badge>
-                  </Link>
+                  </TrackedLink>
                 ))}
               </div>
             )}
@@ -1113,7 +1130,12 @@ export default async function WorkDetailPage({ params }: Props) {
               <h2 className="text-lg font-bold text-foreground">🎤 出演声優の特集ページ</h2>
               <div className="grid gap-3 md:grid-cols-2">
                 {actorFeatures.map((feature) => (
-                  <Link key={feature.name} href={`/tokushu/cv/${encodeURIComponent(feature.name)}`}>
+                  <TrackedLink
+                    key={feature.name}
+                    linkType="cv_feature"
+                    fromWorkId={work.id}
+                    href={`/tokushu/cv/${encodeURIComponent(feature.name)}`}
+                  >
                     <Card className="overflow-hidden border border-pink-500/30 hover:border-pink-500/50 transition-all">
                       {feature.representative_thumbnail_url ? (
                         <div className="relative aspect-[21/9] overflow-hidden">
@@ -1150,7 +1172,7 @@ export default async function WorkDetailPage({ params }: Props) {
                         </div>
                       )}
                     </Card>
-                  </Link>
+                  </TrackedLink>
                 ))}
               </div>
             </section>
@@ -1163,8 +1185,14 @@ export default async function WorkDetailPage({ params }: Props) {
                 🎤 {mainActor}の他の人気作品
               </h2>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-                {actorWorks.map((actorWork) => (
-                  <WorkCard key={actorWork.id} work={actorWork} />
+                {actorWorks.map((actorWork, i) => (
+                  <WorkCard
+                    key={actorWork.id}
+                    work={actorWork}
+                    linkType="work_card_cv"
+                    fromWorkId={work.id}
+                    position={i + 1}
+                  />
                 ))}
               </div>
             </section>
@@ -1177,8 +1205,14 @@ export default async function WorkDetailPage({ params }: Props) {
                 🏠 {work.circleName}の他の人気作品
               </h2>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-                {circleWorks.map((circleWork) => (
-                  <WorkCard key={circleWork.id} work={circleWork} />
+                {circleWorks.map((circleWork, i) => (
+                  <WorkCard
+                    key={circleWork.id}
+                    work={circleWork}
+                    linkType="work_card_circle"
+                    fromWorkId={work.id}
+                    position={i + 1}
+                  />
                 ))}
               </div>
             </section>
@@ -1191,8 +1225,14 @@ export default async function WorkDetailPage({ params }: Props) {
                 🛒 この作品が好きな人はこれも
               </h2>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-                {similarWorks.map((similarWork) => (
-                  <WorkCard key={similarWork.id} work={similarWork} />
+                {similarWorks.map((similarWork, i) => (
+                  <WorkCard
+                    key={similarWork.id}
+                    work={similarWork}
+                    linkType="work_card_similar"
+                    fromWorkId={work.id}
+                    position={i + 1}
+                  />
                 ))}
               </div>
             </section>
@@ -1205,8 +1245,14 @@ export default async function WorkDetailPage({ params }: Props) {
                 こちらもおすすめ
               </h2>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-                {relatedWorks.map((relatedWork) => (
-                  <WorkCard key={relatedWork.id} work={relatedWork} />
+                {relatedWorks.map((relatedWork, i) => (
+                  <WorkCard
+                    key={relatedWork.id}
+                    work={relatedWork}
+                    linkType="work_card_related"
+                    fromWorkId={work.id}
+                    position={i + 1}
+                  />
                 ))}
               </div>
             </section>
@@ -1218,7 +1264,12 @@ export default async function WorkDetailPage({ params }: Props) {
               <h2 className="text-lg font-bold text-foreground">🎤 人気声優特集</h2>
               <div className="grid gap-3 md:grid-cols-3">
                 {voiceActorFeatures.slice(0, 6).map((va) => (
-                  <Link key={va.name} href={`/tokushu/cv/${encodeURIComponent(va.name)}`}>
+                  <TrackedLink
+                    key={va.name}
+                    linkType="cv_feature"
+                    fromWorkId={work.id}
+                    href={`/tokushu/cv/${encodeURIComponent(va.name)}`}
+                  >
                     <div className="flex items-center gap-3 p-3 rounded-lg border border-pink-500/30 hover:border-pink-500/50 transition-all bg-card">
                       {va.representative_thumbnail_url && (
                         <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden">
@@ -1236,7 +1287,7 @@ export default async function WorkDetailPage({ params }: Props) {
                         </p>
                       </div>
                     </div>
-                  </Link>
+                  </TrackedLink>
                 ))}
               </div>
             </section>
@@ -1248,7 +1299,12 @@ export default async function WorkDetailPage({ params }: Props) {
               <h2 className="text-lg font-bold text-foreground">💙 性癖で選ぶ厳選特集</h2>
               <div className="grid gap-3 md:grid-cols-3">
                 {allFeatures.map((feature) => (
-                  <Link key={feature.slug} href={`/feature/${feature.slug}`}>
+                  <TrackedLink
+                    key={feature.slug}
+                    linkType="feature"
+                    fromWorkId={work.id}
+                    href={`/feature/${feature.slug}`}
+                  >
                     <div className="flex items-center gap-3 p-3 rounded-lg border border-blue-500/30 hover:border-blue-500/50 transition-all bg-card">
                       {feature.thumbnail_url && (
                         <div className="relative w-16 h-16 shrink-0 rounded-lg overflow-hidden">
@@ -1266,7 +1322,7 @@ export default async function WorkDetailPage({ params }: Props) {
                         </p>
                       </div>
                     </div>
-                  </Link>
+                  </TrackedLink>
                 ))}
               </div>
             </section>

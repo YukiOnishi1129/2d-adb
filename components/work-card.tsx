@@ -2,15 +2,21 @@
 
 import { memo } from "react";
 import type { Work } from "@/lib/types";
-import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Image, Gamepad2 } from "lucide-react";
 import { getFanzaInitialDiscount } from "@/lib/fanza-promo";
 import { getPrimaryPlatform } from "@/lib/platform-priority";
+import { type LinkType, TrackedLink } from "@/components/tracked-link";
 
 interface WorkCardProps {
   work: Work;
+  /** 回遊計測用。どのセクションのカードか（省略時は計測しない） */
+  linkType?: LinkType;
+  /** 遷移元の作品ID */
+  fromWorkId?: number;
+  /** カードの並び順（上のカードほど押されるかを見る） */
+  position?: number;
 }
 
 function formatPrice(price: number): string {
@@ -135,7 +141,12 @@ function getSpecBadge(work: Work): { icon: typeof Clock; text: string } | null {
   return null;
 }
 
-export const WorkCard = memo(function WorkCard({ work }: WorkCardProps) {
+export const WorkCard = memo(function WorkCard({
+  work,
+  linkType,
+  fromWorkId,
+  position,
+}: WorkCardProps) {
   const cheaper = getCheaperPlatform(work);
   const isOnSale = work.isOnSale;
   const unitPrice = getUnitPrice(work);
@@ -146,7 +157,12 @@ export const WorkCard = memo(function WorkCard({ work }: WorkCardProps) {
     cheaper?.platform === "FANZA" && getFanzaInitialDiscount(work) !== null;
 
   return (
-    <Link href={`/works/${work.id}`}>
+    <TrackedLink
+      href={`/works/${work.id}`}
+      linkType={linkType ?? "other"}
+      fromWorkId={fromWorkId}
+      position={position}
+    >
       <Card className="group overflow-hidden transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
         {/* サムネイル - 横長1.91:1 */}
         <div className="relative aspect-[1.91/1] overflow-hidden bg-muted">
@@ -305,6 +321,6 @@ export const WorkCard = memo(function WorkCard({ work }: WorkCardProps) {
           )}
         </div>
       </Card>
-    </Link>
+    </TrackedLink>
   );
 });
