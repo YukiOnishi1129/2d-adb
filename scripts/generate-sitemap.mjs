@@ -30,6 +30,36 @@ function escapeXml(str) {
     .replace(/'/g, "&apos;");
 }
 
+/**
+ * DBの日時を lastmod 用の YYYY-MM-DD に変換する。
+ *
+ * Googleは lastmod を「正確で検証可能な場合のみ」使う。
+ * 全URLに今日の日付を入れるような実装は信頼されなくなるため、
+ * 実際の更新日時が取れないURLには lastmod を付けない。
+ */
+function toLastmod(value) {
+  if (!value) return null;
+  const d = new Date(String(value).replace(" ", "T"));
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString().split("T")[0];
+}
+
+/** lastmod があるときだけ該当行を出す */
+function lastmodTag(value) {
+  const d = toLastmod(value);
+  return d ? `\n      <lastmod>${d}</lastmod>` : "";
+}
+
+/** 配下の作品の最終更新日を、その一覧ページの lastmod として使う */
+function latestUpdatedAt(works) {
+  let latest = null;
+  for (const w of works) {
+    const d = toLastmod(w.updated_at);
+    if (d && (latest === null || d > latest)) latest = d;
+  }
+  return latest;
+}
+
 async function main() {
   console.log("Loading data from prebuild cache...");
 
@@ -112,7 +142,11 @@ async function main() {
   // 作品ページ（サムネ画像を <image:image> で含めて画像検索からの流入を狙う）
   const workMap = new Map();
   for (const w of availableWorks) {
-    workMap.set(w.id, { thumbnail_url: w.thumbnail_url, title: w.title });
+    workMap.set(w.id, {
+      thumbnail_url: w.thumbnail_url,
+      title: w.title,
+      updated_at: w.updated_at,
+    });
   }
 
   for (const id of workIds) {
@@ -127,17 +161,40 @@ async function main() {
     }
     urls.push(`
     <url>
-      <loc>${BASE_URL}/works/${id}/</loc>
+      <loc>${BASE_URL}/works/${id}/</loc>${lastmodTag(w.updated_at)}
       <changefreq>weekly</changefreq>
       <priority>0.8</priority>${imageBlock}
     </url>`);
   }
 
+  // 一覧ページの lastmod は「そこに載る作品の最終更新日」を使う。
+  // 新作が増えたページほど新しい日付になり、Googleの再クロール判断に使える。
+  const worksByActor = new Map();
+  const worksByTag = new Map();
+  const worksByCircleId = new Map();
+  for (const work of availableWorks) {
+    for (const name of work.cv_names || []) {
+      if (!worksByActor.has(name)) worksByActor.set(name, []);
+      worksByActor.get(name).push(work);
+    }
+    for (const tag of work.ai_tags || []) {
+      if (!worksByTag.has(tag)) worksByTag.set(tag, []);
+      worksByTag.get(tag).push(work);
+    }
+    if (work.circle_id !== null && work.circle_id !== undefined) {
+      if (!worksByCircleId.has(work.circle_id))
+        worksByCircleId.set(work.circle_id, []);
+      worksByCircleId.get(work.circle_id).push(work);
+    }
+  }
+  const circleIdByName = new Map(circles.map((c) => [c.name, c.id]));
+
   // 声優ページ
   for (const name of actorNames) {
+    const updated = latestUpdatedAt(worksByActor.get(name) || []);
     urls.push(`
     <url>
-      <loc>${BASE_URL}/cv/${encodeURIComponent(name)}/</loc>
+      <loc>${BASE_URL}/cv/${encodeURIComponent(name)}/</loc>${lastmodTag(updated)}
       <changefreq>weekly</changefreq>
       <priority>0.7</priority>
     </url>`);
@@ -145,9 +202,10 @@ async function main() {
 
   // タグページ
   for (const name of tagNames) {
+    const updated = latestUpdatedAt(worksByTag.get(name) || []);
     urls.push(`
     <url>
-      <loc>${BASE_URL}/tags/${encodeURIComponent(name)}/</loc>
+      <loc>${BASE_URL}/tags/${encodeURIComponent(name)}/</loc>${lastmodTag(updated)}
       <changefreq>weekly</changefreq>
       <priority>0.6</priority>
     </url>`);
@@ -155,9 +213,12 @@ async function main() {
 
   // サークルページ
   for (const name of circleNames) {
+    const updated = latestUpdatedAt(
+      worksByCircleId.get(circleIdByName.get(name)) || []
+    );
     urls.push(`
     <url>
-      <loc>${BASE_URL}/circles/${encodeURIComponent(name)}/</loc>
+      <loc>${BASE_URL}/circles/${encodeURIComponent(name)}/</loc>${lastmodTag(updated)}
       <changefreq>weekly</changefreq>
       <priority>0.6</priority>
     </url>`);
